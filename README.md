@@ -8,3 +8,9 @@ This repository contains **Partitioning Around Medoids (PAM)** algorithm written
 PAM algorithm description can be found on [Algowiki project (russian only)](https://algowiki-project.org/ru/Partitioning_Around_Medoids_(PAM))
 
 PAM algorithm must not be mixed with *k-medoids* algorithm. PAM is based on two phases: *BUILD* and *SWAP*, - each iteration of SWAP phase search for some element in a given set of elements to replace one of already selected *medoids* (cluster centers) to minimize objective function.
+
+# Temporary notes
+
+home directory is not seen from the processes
+to pass information to your programm put files into:
+`~/_scratch`
