@@ -6,6 +6,7 @@
 module add slurm
 
 # module available
-module add openmpi/1.5.5-gcc
+module add impi/5.0.1
 
 mpicxx pam.cpp -o pam
+cp ./pam ~/_scratch/pam

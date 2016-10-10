@@ -1,10 +1,12 @@
 #! /bin/bash
 
 module add slurm
-module add openmpi/1.5.5-gcc
+module add impi/5.0.1
+
+cd ~/_scratch/
 
 # Starting program
-sbatch -p test -n 8 ompi ./pam
+sbatch -p test -n 8 impi ./pam
 
 # Looking into queue
 squeue -p test

@@ -1,6 +1,8 @@
-#include <ostream>
-
 #include <mpi.h>
+
+#include <fstream>
+
+#include <unistd.h>
 
 using std::fstream;
 using std::endl;
@@ -19,7 +21,7 @@ int main(int argc, char* argv[])
 
     gethostname(hostname, 255);
 
-    fstream fout ("~/_scratch/output.txt", std::fstream::out);
+    fstream fout ("output.txt", fstream::out | fstream::app);
     fout << "Hello world!  I am process number: " << rank << " on host " << hostname << endl;
     fout.close();
 
