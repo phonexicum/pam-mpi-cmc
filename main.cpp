@@ -1,0 +1,189 @@
+#include <mpi.h>
+
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <iostream>
+#include <cmath>
+// #include <ctime>
+#include <chrono>
+// #include <algorithm>
+#include <set>
+
+#include "pam.h"
+
+using std::string;
+using std::fstream;
+using std::cout;
+using std::endl;
+using std::set;
+using std::istringstream;
+// using std::clock;
+// using std::clock_t;
+
+// ==================================================================================================================================================
+//                                                                                                                                          InputData
+// ==================================================================================================================================================
+struct InputData {
+
+    const int n; // Size of multitude (vectors in R^m)
+    const int m; // vector dimension (vector is point in R^m)
+    double* vectors;
+
+    InputData(const int n, const int m, const string& fin_str);
+    ~InputData();
+
+    // FUTURE WORK: Calculations of distance matrix can be parallelized
+    double* GenerateDistanceMatrix() const;
+};
+
+// ==================================================================================================================================================
+//                                                                                                                                               MAIN
+// ==================================================================================================================================================
+int main(int argc, char* argv[]){
+
+    // ================================
+    MPI_Init(&argc,&argv); // Start MPI
+    // ================================
+
+    cout << "fuck" << endl;
+
+    if (argc != 7){
+        cout << "Wrong parameters. Usage: './binary n m k input_data.txt output_data.txt t'" << endl;
+        // argv[0] - pointer to binary name
+        // argv[1] - pointer to number n - multitude power
+        // argv[2] - pointer to number m - vector length
+        // argv[3] - pointer to number k - clusters number
+        // argv[4] - pointer to output data
+        // argv[5] - pointer to input data
+        // argv[6] - pointer to number t - number of iterations to compute for time measurement
+        return 0;
+    }
+
+    int n; istringstream(argv[1]) >> n;
+    int m; istringstream(argv[2]) >> m;
+    int k; istringstream(argv[3]) >> k;
+    string input_file = string(argv[4]);
+    string output_file = string(argv[5]);
+    int t; istringstream(argv[6]) >> t;
+
+    cout << "incomping" << endl;
+
+    InputData inputData (n, m, input_file);
+
+    cout << "before" << endl;
+
+    // PAM pam (n, k, inputData.GenerateDistanceMatrix());
+
+    cout << "after" << endl;
+
+    inputData.~InputData();
+
+    cout << "wat" << endl;
+
+    // pam.BuildPhase();
+
+    cout << "hifi" << endl;
+
+    // // ================================
+    // MPI_Init(&argc,&argv); // Start MPI
+    // // ================================
+
+    ProcParams procParams;
+
+    // clock_t startClock;
+    // if (procParams.rank == 0){
+    //     startClock = clock();
+    // }
+    
+    auto startClock = std::chrono::high_resolution_clock::now();
+
+    // pam.SwapPhase(procParams, t);
+
+    auto finishClock = std::chrono::high_resolution_clock::now();
+
+    // fstream fout ("output.txt", fstream::out | fstream::app);
+    // fout << "Hello world!  I am process number: " << rank << " on host " << endl;
+    // fout.close();
+
+    // Output results
+    // if (procParams.rank == 0){
+
+    //     // double PAMduration = ( clock() - startClock ) / (double) CLOCKS_PER_SEC;
+
+    //     cout << "n= " << n << " m= " << m << " k= " << k << " t= " << t << endl;
+    //     cout << "timeDuration= " << std::chrono::duration_cast<std::chrono::milliseconds>(finishClock - startClock).count() << " milliseconds" << endl;
+    //     cout << "iterations= " << pam.getIterationsCounter() << endl;
+    //     cout << "targetFunctionValue= " << pam.getTargetFunctionValue() << endl;
+    //     cout << "Medoids(points-indexes):" << endl;
+
+    //     set<int> medoidsIndexes = pam.getMedoids();
+    //     fstream fout (output_file, fstream::out | fstream::app);
+    //     for (auto it = medoidsIndexes.begin(); it != medoidsIndexes.end(); it++){
+    //         fout << *it << " ";
+    //     }
+    //     fout << endl;
+    //     fout.close();
+    // }
+
+    // ========================
+    MPI_Finalize(); // Stop MPI
+    // ========================
+
+    return 0;
+}
+
+// ==================================================================================================================================================
+//                                                                                                                               InputData::InputData
+// ==================================================================================================================================================
+InputData::InputData(const int n_, const int m_, const string& fin_str):
+n(n_), m(m_)
+{
+    cout << "strange" << endl;
+
+    fstream fin(fin_str.c_str(), fstream::in);
+
+    vectors = new double [n*m];
+    for (int i = 0; i < n; i++){
+        for (int j = 0; j < m; j++){
+            fin >> vectors[i*m + j];
+        }
+    }
+
+    fin.close();
+}
+
+// ==================================================================================================================================================
+//                                                                                                                              InputData::~InputData
+// ==================================================================================================================================================
+InputData::~InputData() {
+    delete [] vectors; vectors = NULL;
+}
+
+// ==================================================================================================================================================
+//                                                                                                                  InputData::GenerateDistanceMatrix
+// ==================================================================================================================================================
+double* InputData::GenerateDistanceMatrix() const{
+
+    cout << "problem core" << endl;
+
+    double* distanceMatrix = new double [n*n];
+
+    cout << "the problem" << endl;
+
+    for (int i = 0; i < n; i++){
+        distanceMatrix[i*n + i] = 0;
+        for (int j = i+1; j < n; j++){
+            double rho = 0;
+            for (int k = 0; k < m; k++){
+                double diff = vectors[i*m + k] - vectors[j*m + k];
+                rho += diff * diff;
+            }
+            distanceMatrix[i*n + j] = distanceMatrix[j*n + i] = std::sqrt(rho);
+        }
+    }
+
+    cout << "near return" << endl;
+
+    return distanceMatrix;
+}
