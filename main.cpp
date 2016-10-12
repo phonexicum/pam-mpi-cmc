@@ -42,11 +42,7 @@ struct InputData {
 // ==================================================================================================================================================
 int main(int argc, char* argv[]){
 
-    // ================================
-    MPI_Init(&argc,&argv); // Start MPI
-    // ================================
-
-    cout << "fuck" << endl;
+    // Input checking
 
     if (argc != 7){
         cout << "Wrong parameters. Usage: './binary n m k input_data.txt output_data.txt t'" << endl;
@@ -67,64 +63,45 @@ int main(int argc, char* argv[]){
     string output_file = string(argv[5]);
     int t; istringstream(argv[6]) >> t;
 
-    cout << "incomping" << endl;
-
-    InputData inputData (n, m, input_file);
-
-    cout << "before" << endl;
-
-    // PAM pam (n, k, inputData.GenerateDistanceMatrix());
-
-    cout << "after" << endl;
-
-    inputData.~InputData();
-
-    cout << "wat" << endl;
-
-    // pam.BuildPhase();
-
-    cout << "hifi" << endl;
-
-    // // ================================
-    // MPI_Init(&argc,&argv); // Start MPI
-    // // ================================
+    // ================================
+    MPI_Init(&argc,&argv); // Start MPI
+    // ================================
 
     ProcParams procParams;
 
-    // clock_t startClock;
-    // if (procParams.rank == 0){
-    //     startClock = clock();
-    // }
-    
+    InputData inputData (n, m, input_file);
+
+    PAM pam (n, k, inputData.GenerateDistanceMatrix());
+
+    inputData.~InputData();
+
+    pam.BuildPhaseConsecutive();
+
     auto startClock = std::chrono::high_resolution_clock::now();
 
-    // pam.SwapPhase(procParams, t);
+    pam.SwapPhase(procParams, t);
 
     auto finishClock = std::chrono::high_resolution_clock::now();
 
-    // fstream fout ("output.txt", fstream::out | fstream::app);
-    // fout << "Hello world!  I am process number: " << rank << " on host " << endl;
-    // fout.close();
-
     // Output results
-    // if (procParams.rank == 0){
+    if (procParams.rank == 0){
 
-    //     // double PAMduration = ( clock() - startClock ) / (double) CLOCKS_PER_SEC;
+        // double PAMduration = ( clock() - startClock ) / (double) CLOCKS_PER_SEC;
 
-    //     cout << "n= " << n << " m= " << m << " k= " << k << " t= " << t << endl;
-    //     cout << "timeDuration= " << std::chrono::duration_cast<std::chrono::milliseconds>(finishClock - startClock).count() << " milliseconds" << endl;
-    //     cout << "iterations= " << pam.getIterationsCounter() << endl;
-    //     cout << "targetFunctionValue= " << pam.getTargetFunctionValue() << endl;
-    //     cout << "Medoids(points-indexes):" << endl;
+        fstream fout (output_file, fstream::out | fstream::app);
+        fout << "n= " << n << " m= " << m << " k= " << k << " t= " << t << endl;
+        fout << "timeDuration= " << std::chrono::duration_cast<std::chrono::nanoseconds>(finishClock - startClock).count() << " nano-seconds" << endl;
+        fout << "iterations= " << pam.getIterationsCounter() << endl;
+        fout << "targetFunctionValue= " << pam.getTargetFunctionValue() << endl;
+        fout << "Medoids(points-indexes):" << endl;
 
-    //     set<int> medoidsIndexes = pam.getMedoids();
-    //     fstream fout (output_file, fstream::out | fstream::app);
-    //     for (auto it = medoidsIndexes.begin(); it != medoidsIndexes.end(); it++){
-    //         fout << *it << " ";
-    //     }
-    //     fout << endl;
-    //     fout.close();
-    // }
+        set<int> medoidsIndexes = pam.getMedoids();
+        for (auto it = medoidsIndexes.begin(); it != medoidsIndexes.end(); it++){
+            fout << *it << " ";
+        }
+        fout << endl;
+        fout.close();
+    }
 
     // ========================
     MPI_Finalize(); // Stop MPI
@@ -139,8 +116,6 @@ int main(int argc, char* argv[]){
 InputData::InputData(const int n_, const int m_, const string& fin_str):
 n(n_), m(m_)
 {
-    cout << "strange" << endl;
-
     fstream fin(fin_str.c_str(), fstream::in);
 
     vectors = new double [n*m];
@@ -165,11 +140,7 @@ InputData::~InputData() {
 // ==================================================================================================================================================
 double* InputData::GenerateDistanceMatrix() const{
 
-    cout << "problem core" << endl;
-
     double* distanceMatrix = new double [n*n];
-
-    cout << "the problem" << endl;
 
     for (int i = 0; i < n; i++){
         distanceMatrix[i*n + i] = 0;
@@ -182,8 +153,6 @@ double* InputData::GenerateDistanceMatrix() const{
             distanceMatrix[i*n + j] = distanceMatrix[j*n + i] = std::sqrt(rho);
         }
     }
-
-    cout << "near return" << endl;
 
     return distanceMatrix;
 }

@@ -42,9 +42,14 @@ class PAM {
     ~PAM();
 
     // FUTURE WORK: BuildPhase calculation can be parallelized
-    void BuildPhase ();
+    void BuildPhaseConsecutive ();
+
     // SwapPhase is parallelized
+    // 
+    // ASSUMPTION: state of PAM data structure must be equal for all processes before SwapPhase and will be equal after SwapPhase
+    // 
     // itMax - maximum number of iterations
+    // 
     void SwapPhase (const ProcParams& procParams, const int itMax);
 
     void Dump (const string& fout_str) const;

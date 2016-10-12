@@ -20,8 +20,6 @@ distanceMatrix(distanceMatrix_),
 iterationsCounter(0),
 targetFunctionValue(0)
 {
-    cout << "the beginning" << endl;
-
     distanceMatrix_ = NULL;
     // medoidsIndexes = new int[k];
     // for (int i = 0; i < k; i++){
@@ -38,9 +36,9 @@ PAM::~PAM(){
 }
 
 // ==================================================================================================================================================
-//                                                                                                                                    PAM::BuildPhase
+//                                                                                                                         PAM::BuildPhaseConsecutive
 // ==================================================================================================================================================
-void PAM::BuildPhase (){
+void PAM::BuildPhaseConsecutive (){
 
     double* previousMIN = new double [n];
 
@@ -114,8 +112,102 @@ void PAM::BuildPhase (){
 // ==================================================================================================================================================
 void PAM::SwapPhase (const ProcParams& procParams, const int itMax){
 
-    if (itMax != 0){
-        return;
+    // computation of task's positions for current process from calculation graph
+    
+    int tasksNum = k*(n-k);
+    int tasksPerProcess = tasksNum / procParams.size + (tasksNum % procParams.size != 0);
+    int freeTaskPlaces = tasksPerProcess - tasksNum % procParams.size;
+    if (freeTaskPlaces == tasksPerProcess) freeTaskPlaces = 0;
+    int fullyLoadedProcesses = procParams.size - freeTaskPlaces;
+
+    int absolutePosition = 0;
+    int tasksPerThisProcess = 0;
+    if (procParams.rank < fullyLoadedProcesses){
+        absolutePosition = procParams.rank * tasksPerProcess;
+        tasksPerThisProcess = tasksPerProcess;
+    } else {
+        absolutePosition = fullyLoadedProcesses * tasksPerProcess + (procParams.rank - fullyLoadedProcesses) * (tasksPerProcess-1);
+        tasksPerThisProcess = tasksPerProcess -1;
+    }
+    int replacedMedoidIndex = absolutePosition / (n-k);
+    int potentialNonMedoidIndex = absolutePosition % (n-k);
+
+    // in result:
+    // 
+    // tasksPerThisProcess
+    // replacedMedoidIndex
+    // potentialNonMedoidIndex
+    // 
+
+    double* min_m_s = new double [n];
+
+    while (true){
+
+        // Calculation of best minSum and arguments m_s and o_h
+
+        double minSum = 0;
+        int minSum_m_s = 0;
+        int minSum_o_h = 0;
+
+        bool firstTimeCalculation = true;
+        int m_s = replacedMedoidIndex;
+        bool m_s_changed = true;
+        int o_h = potentialNonMedoidIndex;
+        for (int computedTasks = 0; computedTasks < tasksPerThisProcess; computedTasks++, o_h++){
+            if (medoidsIndexes.find(o_h) == medoidsIndexes.end()){
+
+                if (m_s_changed == true)
+                {
+                    // Computing independent from summ and from o_h changing minimum
+                    //      (computing min_m_s)
+                    for (int i = 0; i < n; i++){
+                        int it = medoidsIndexes.begin();
+                        if (*it == m_s) it++;
+                        min_m_s[i] = it; it++;
+                        for (; it != medoidsIndexes.end(); it++){
+                            if (*it != m_s){
+                                min_m_s[i] = std::min(min_m_s[i], distanceMatrix[m_s*n + i]);
+                            }
+                        }
+                    }
+                    m_s_changed = false;
+                }
+
+                double sum = 0;
+                // Computing sum(min(a,b))
+                for (int i = 0; i < n; i++){
+                    sum += std::min(min_m_s[i], distanceMatrix[o_h*n + i]);
+                }
+                if (sum < minSum or firstTimeCalculation){
+                    minSum = sum;
+                    minSum_m_s = m_s;
+                    minSum_o_h = o_h;
+                    firstTimeCalculation = false;
+                }
+            }
+            if (o_h >= n-k){
+                o_h = 0;
+                m_s++;
+                m_s_changed = true;
+            }
+            if (m_s >= k){
+                cout << "Fatal error. This situation, when 'm_s >= k' must never rise." << endl;
+            }
+        }
+
+        // Send minSum
+
+        
+
+        if (procParams.rank < k){
+            // Receive minimum and synchronize
+            
+        }
+
+        iterationsCounter ++;
+        if (itMax != 0 && iterationsCounter < itMax ){
+            break;
+        }
     }
 }
 
@@ -123,7 +215,9 @@ void PAM::SwapPhase (const ProcParams& procParams, const int itMax){
 //                                                                                                                                          PAM::Dump
 // ==================================================================================================================================================
 void PAM::Dump (const string& fout_str) const{
+    
     fstream fout(fout_str, fstream::out | fstream::app);
+    fout << "========== Dump begin ==========" << endl;
 
     fout << "n= " << n << endl;
     fout << "k= " << k << endl;
@@ -144,5 +238,6 @@ void PAM::Dump (const string& fout_str) const{
         fout << endl;
     }
 
+    fout << "========== Dump end ==========" << endl;
     fout.close();
 }
