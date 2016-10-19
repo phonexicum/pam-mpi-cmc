@@ -5,6 +5,8 @@
 #include <chrono>
 #include <iostream>
 
+#include <unistd.h>
+
 using std::fstream;
 using std::endl;
 using std::cout;
@@ -14,25 +16,22 @@ using std::cout;
 // ==================================================================================================================================================
 //                                                                                                                                           PAM::PAM
 // ==================================================================================================================================================
-PAM::PAM(const int n_, const int k_, double* distanceMatrix_):
+PAM::PAM(const unsigned int n_, const unsigned int k_, double* distanceMatrix_):
 n(n_), k(k_),
 distanceMatrix(distanceMatrix_),
 iterationsCounter(0),
 targetFunctionValue(0)
 {
-    distanceMatrix_ = NULL;
-    // medoidsIndexes = new int[k];
-    // for (int i = 0; i < k; i++){
-    //     // Random distribution (this is redundancy, because of BUILD phase of PAM algorithm)
-    //     medoidsIndexes[i] = i;
-    // }
+    for (unsigned int i = 0; i < n; i++)
+        nonMedoidsIndexes.insert(i);
 }
 
 // ==================================================================================================================================================
 //                                                                                                                                          PAM::~PAM
 // ==================================================================================================================================================
 PAM::~PAM(){
-    delete [] distanceMatrix; distanceMatrix = NULL;
+    distanceMatrix = NULL;
+    // delete [] distanceMatrix; distanceMatrix = NULL;
 }
 
 // ==================================================================================================================================================
@@ -40,67 +39,77 @@ PAM::~PAM(){
 // ==================================================================================================================================================
 void PAM::BuildPhaseConsecutive (){
 
+    // fstream("output.txt", fstream::out | fstream::app) << "BuildPhaseConsecutive" << endl;
+
+    if (not CheckParametersCorrectness())
+        return;
+
     double* previousMIN = new double [n];
 
-    for (int currentMedoid_i = 0; currentMedoid_i < k; currentMedoid_i++){
+
+    for (unsigned int currentMedoid_i = 0; currentMedoid_i < k; currentMedoid_i++){
         if (currentMedoid_i == 0){
             
             double minSum = 0; // target function value
-            int bestNonMedoid = 0;
+            set<unsigned int>::iterator bestNonMedoid;
 
             bool firstAttempt = true;
-            for (int i = 0; i < n; i++){
+            for (auto it = nonMedoidsIndexes.begin(); it != nonMedoidsIndexes.end(); it++){
                 double sum = 0;
                 
-                for (int j = 0; j < n; j++){
-                    sum += distanceMatrix[i*n + j];
+                for (unsigned int j = 0; j < n; j++){
+                    sum += distanceMatrix[(*it)*n + j];
                 }
 
                 if (firstAttempt or minSum > sum) {
                     minSum = sum;
-                    bestNonMedoid = i;
+                    bestNonMedoid = it;
                     firstAttempt = false;
                 }
             }
 
             targetFunctionValue = minSum;
-            medoidsIndexes.insert(bestNonMedoid);
-            for (int i = 0; i < n; i++){
-                previousMIN[i] = distanceMatrix[bestNonMedoid*n + i];
+            unsigned int bestNM = *bestNonMedoid;
+            medoidsIndexes.insert(bestNM);
+            nonMedoidsIndexes.erase(bestNonMedoid);
+            for (unsigned int i = 0; i < n; i++){
+                previousMIN[i] = distanceMatrix[bestNM*n + i];
             }
 
         } else {
 
             double minSum = 0;
-            int bestNonMedoid = 0;
+            set<unsigned int>::iterator bestNonMedoid;
 
             bool firstAttempt = true;
-            for (int i = 0; i < n; i++){
-
-                // We search for new medoids only in multitude of non-medoids
-                if (medoidsIndexes.find(i) != medoidsIndexes.end()){
-                    continue;
-                }
+            for (auto it = nonMedoidsIndexes.begin(); it != nonMedoidsIndexes.end(); it++) {
 
                 // Counting sum of mins
                 double sum = 0;
-                for (int j = 0; j < n; j++){
-                    sum += std::min(previousMIN[j], distanceMatrix[i*n + j]);
+                for (unsigned int j = 0; j < n; j++){
+                    sum += std::min(previousMIN[j], distanceMatrix[(*it)*n + j]);
                 }
 
                 if (firstAttempt or minSum > sum) {
                     minSum = sum;
-                    bestNonMedoid = i;
+                    bestNonMedoid = it;
                     firstAttempt = false;
                 }
             }
 
             targetFunctionValue = minSum;
-            medoidsIndexes.insert(bestNonMedoid);
-            for (int i = 0; i < n; i++){
-                previousMIN[i] = std::min(previousMIN[i], distanceMatrix[bestNonMedoid*n + i]);
+            unsigned int bestNM = *bestNonMedoid;
+            medoidsIndexes.insert(bestNM);
+            nonMedoidsIndexes.erase(bestNonMedoid);
+            for (unsigned int i = 0; i < n; i++){
+                previousMIN[i] = std::min(previousMIN[i], distanceMatrix[bestNM*n + i]);
             }
+        }
 
+        int rank;
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        if (rank == 0){
+            Dump();
         }
     }
 
@@ -110,105 +119,224 @@ void PAM::BuildPhaseConsecutive (){
 // ==================================================================================================================================================
 //                                                                                                                                     PAM::SwapPhase
 // ==================================================================================================================================================
-void PAM::SwapPhase (const ProcParams& procParams, const int itMax){
+void PAM::SwapPhase (const ProcParams& procParams, const unsigned int itMax){
+
+    // sleep(1);
+    // fstream("output.txt", fstream::out | fstream::app) << "SwapPhase" << endl;
+
+    if (medoidsIndexes.size() >= n or medoidsIndexes.size() <= 1 or not CheckParametersCorrectness())
+        return;
 
     // computation of task's positions for current process from calculation graph
     
-    int tasksNum = k*(n-k);
-    int tasksPerProcess = tasksNum / procParams.size + (tasksNum % procParams.size != 0);
-    int freeTaskPlaces = tasksPerProcess - tasksNum % procParams.size;
-    if (freeTaskPlaces == tasksPerProcess) freeTaskPlaces = 0;
-    int fullyLoadedProcesses = procParams.size - freeTaskPlaces;
+    unsigned int tasksNum = k*(n-k);
+    unsigned int tasksPerProcess = std::ceil(static_cast<double>(tasksNum) / procParams.size);
+    unsigned int absolutePosition = procParams.rank * tasksPerProcess;
+    unsigned int task_m_s = absolutePosition / (n-k);
+    unsigned int task_o_h = absolutePosition % (n-k);
 
-    int absolutePosition = 0;
-    int tasksPerThisProcess = 0;
-    if (procParams.rank < fullyLoadedProcesses){
-        absolutePosition = procParams.rank * tasksPerProcess;
-        tasksPerThisProcess = tasksPerProcess;
-    } else {
-        absolutePosition = fullyLoadedProcesses * tasksPerProcess + (procParams.rank - fullyLoadedProcesses) * (tasksPerProcess-1);
-        tasksPerThisProcess = tasksPerProcess -1;
+    if (procParams.rank * tasksPerProcess >= tasksNum) {
+        // Somebody given to us more processes then tasks, I am going to use not all processes
+        return;
     }
-    int replacedMedoidIndex = absolutePosition / (n-k);
-    int potentialNonMedoidIndex = absolutePosition % (n-k);
-
-    // in result:
-    // 
-    // tasksPerThisProcess
-    // replacedMedoidIndex
-    // potentialNonMedoidIndex
-    // 
 
     double* min_m_s = new double [n];
 
     while (true){
 
+        // sleep(1);
+
         // Calculation of best minSum and arguments m_s and o_h
 
-        double minSum = 0;
-        int minSum_m_s = 0;
-        int minSum_o_h = 0;
+        MPIMessage localObjFnMin;
 
         bool firstTimeCalculation = true;
-        int m_s = replacedMedoidIndex;
+        auto m_s = medoidsIndexes.begin();
+        for (unsigned int i = 0; i < task_m_s; i++)
+            m_s++;
         bool m_s_changed = true;
-        int o_h = potentialNonMedoidIndex;
-        for (int computedTasks = 0; computedTasks < tasksPerThisProcess; computedTasks++, o_h++){
-            if (medoidsIndexes.find(o_h) == medoidsIndexes.end()){
+        auto o_h = nonMedoidsIndexes.begin();
+        for (unsigned int i = 0; i < task_o_h; i++)
+            o_h++;
 
-                if (m_s_changed == true)
-                {
-                    // Computing independent from summ and from o_h changing minimum
-                    //      (computing min_m_s)
-                    for (int i = 0; i < n; i++){
-                        int it = medoidsIndexes.begin();
-                        if (*it == m_s) it++;
-                        min_m_s[i] = it; it++;
-                        for (; it != medoidsIndexes.end(); it++){
-                            if (*it != m_s){
-                                min_m_s[i] = std::min(min_m_s[i], distanceMatrix[m_s*n + i]);
-                            }
+        for (unsigned int computedTasks = 0; computedTasks < tasksPerProcess; computedTasks++){
+
+            if (m_s_changed == true)
+            {
+                // Computing independent from summ and from o_h changing minimum
+                //      (computing min_m_s)
+                for (unsigned int i = 0; i < n; i++){
+                    auto it = medoidsIndexes.begin();
+                    if (*it == *m_s) it++;
+                    min_m_s[i] = distanceMatrix[(*it)*n + i]; it++;
+                    for (; it != medoidsIndexes.end(); it++){
+                        if (*it != *m_s){
+                            min_m_s[i] = std::min(min_m_s[i], distanceMatrix[(*it)*n + i]);
                         }
                     }
-                    m_s_changed = false;
                 }
-
-                double sum = 0;
-                // Computing sum(min(a,b))
-                for (int i = 0; i < n; i++){
-                    sum += std::min(min_m_s[i], distanceMatrix[o_h*n + i]);
-                }
-                if (sum < minSum or firstTimeCalculation){
-                    minSum = sum;
-                    minSum_m_s = m_s;
-                    minSum_o_h = o_h;
-                    firstTimeCalculation = false;
-                }
+                m_s_changed = false;
             }
-            if (o_h >= n-k){
-                o_h = 0;
+
+            double sum = 0;
+            // Computing sum(min(a,b))
+            for (unsigned int i = 0; i < n; i++){
+                sum += std::min(min_m_s[i], distanceMatrix[(*o_h)*n + i]);
+            }
+            if (sum < localObjFnMin.objFn or firstTimeCalculation){
+                localObjFnMin.objFn = sum;
+                localObjFnMin.objFn_m_s = *m_s;
+                localObjFnMin.objFn_o_h = *o_h;
+                firstTimeCalculation = false;
+            }
+
+            o_h++;
+            
+            if (o_h == nonMedoidsIndexes.end()){
+                o_h = nonMedoidsIndexes.begin();
                 m_s++;
                 m_s_changed = true;
             }
-            if (m_s >= k){
-                cout << "Fatal error. This situation, when 'm_s >= k' must never rise." << endl;
+            if (m_s == medoidsIndexes.end()){
+                // Last process could have some shortage of counting tasks
+                break;
             }
         }
 
-        // Send minSum
+        int agregate_proc_amount = std::min(procParams.size, static_cast<int>(k));
+        // Usually k is far less then number of processes, but for debug purposes, when k can be bigger (and in that case process in their first aggregation step in fact will not aggregate anything)
 
-        
+        if (procParams.rank >= agregate_proc_amount)
+        {
+            // Send minSum
+            int ret = MPI_Ssend(
+                &localObjFnMin,                         // void* buffer
+                sizeof(MPIMessage),                     // int count
+                MPI_BYTE,                               // MPI_Datatype datatype
+                procParams.rank % agregate_proc_amount, // int dest
+                MPIMessageTypes::FirstStepAgregation,   // int tag
+                procParams.comm                         // MPI_Comm comm
+            );
 
-        if (procParams.rank < k){
-            // Receive minimum and synchronize
-            
+            // fstream ("output.txt", fstream::out | fstream::app) << "send " << procParams.rank << "->" << procParams.rank % agregate_proc_amount << " message = " << localObjFnMin.objFn << " " << localObjFnMin.objFn_m_s << " " << localObjFnMin.objFn_o_h << " FirstStepAgregation" << endl;
+            if (ret != MPI_SUCCESS){
+                cout << "Fatal error. '" << procParams.rank << "' failed to send data 'MPIMessage' to '" << procParams.rank % agregate_proc_amount << "' on FirstStepAgregation step. Continuing to process data, however program will probably hang." << endl;
+            }
+
+        } else {
+            // Getting sended minimums, by other processes and counting minimum
+            for (int i = agregate_proc_amount + procParams.rank; i < std::min(procParams.size, static_cast<int>(tasksNum)); i+= agregate_proc_amount){
+
+                MPI_Status status;
+                MPIMessage incomingObjFnMin;
+
+                // I do not care about order of incoming messages from other processes, but I know how many there is messages to be received
+                int ret = MPI_Recv(
+                    &incomingObjFnMin,                      // void *buf
+                    sizeof(MPIMessage),                     // int count
+                    MPI_BYTE,                               // MPI_Datatype datatype
+                    MPI_ANY_SOURCE,                         // int source
+                    MPIMessageTypes::FirstStepAgregation,   // int tag
+                    procParams.comm,                        // MPI_Comm comm
+                    &status                                 // MPI_Status *status
+                );
+
+                // fstream ("output.txt", fstream::out | fstream::app) << "recv " << procParams.rank << "<-" << status.MPI_TAG << " message = " << incomingObjFnMin.objFn << " " << incomingObjFnMin.objFn_m_s << " " << incomingObjFnMin.objFn_o_h << " FirstStepAgregation" << endl;
+                if (ret != MPI_SUCCESS){
+                    cout << "Error. Some problems in receiving 'MPIMessage' on step 'FirstStepAgregation', skipping error and continuing work.";
+                } else {
+                    if (localObjFnMin.objFn > incomingObjFnMin.objFn){
+                        localObjFnMin.objFn = incomingObjFnMin.objFn;
+                        localObjFnMin.objFn_m_s = incomingObjFnMin.objFn_m_s;
+                        localObjFnMin.objFn_o_h = incomingObjFnMin.objFn_o_h;
+                    }
+                }
+            }
+
+            // Agregating ObjFnMin on process with rank = 0
+
+            if (procParams.rank != 0){
+                // Send minSum
+                int ret = MPI_Ssend(
+                    &localObjFnMin,                         // void* buffer
+                    sizeof(MPIMessage),                     // int count
+                    MPI_BYTE,                               // MPI_Datatype datatype
+                    0,                                      // int dest
+                    MPIMessageTypes::SecondStepAgregation,  // int tag
+                    procParams.comm                         // MPI_Comm comm
+                );
+
+                // fstream ("output.txt", fstream::out | fstream::app) << "send " << procParams.rank << "->" << 0 << " message = " << localObjFnMin.objFn << " " << localObjFnMin.objFn_m_s << " " << localObjFnMin.objFn_o_h << " SecondStepAgregation" << endl;
+                if (ret != MPI_SUCCESS){
+                    cout << "Fatal error. '" << procParams.rank << "' failed to send data 'MPIMessage' to '0' on SecondStepAgregation step. Continuing to process data, however program will probably hang." << endl;
+                }
+
+            } else {
+                for (int i = 1; i < agregate_proc_amount; i++){
+
+                    MPI_Status status;
+                    MPIMessage incomingObjFnMin;
+
+                    // I do not care about order of incoming messages from other processes, but I know how many there is messages to be received
+                    int ret = MPI_Recv(
+                        &incomingObjFnMin,                      // void *buf
+                        sizeof(MPIMessage),                     // int count
+                        MPI_BYTE,                               // MPI_Datatype datatype
+                        MPI_ANY_SOURCE,                         // int source
+                        MPIMessageTypes::SecondStepAgregation,  // int tag
+                        procParams.comm,                        // MPI_Comm comm
+                        &status                                 // MPI_Status *status
+                    );
+
+                    // fstream ("output.txt", fstream::out | fstream::app) << "recv " << procParams.rank << "<-" << status.MPI_SOURCE << " message = " << incomingObjFnMin.objFn << " " << incomingObjFnMin.objFn_m_s << " " << incomingObjFnMin.objFn_o_h << " SecondStepAgregation" << endl;
+                    if (ret != MPI_SUCCESS){
+                        cout << "Error. Some problems in receiving 'MPIMessage' on step 'SecondStepAgregation', skipping error and continuing work.";
+                    } else {
+                        if (localObjFnMin.objFn > incomingObjFnMin.objFn){
+                            localObjFnMin.objFn = incomingObjFnMin.objFn;
+                            localObjFnMin.objFn_m_s = incomingObjFnMin.objFn_m_s;
+                            localObjFnMin.objFn_o_h = incomingObjFnMin.objFn_o_h;
+                        }
+                    }
+                }
+            }
         }
+
+        // Broadcasting localObjFnMin from process of rank = 0
+        MPI_Bcast(
+            &localObjFnMin,     // void* buffer
+            sizeof(MPIMessage), // int count
+            MPI_BYTE,           // MPI_Datatype datatype
+            0,                  // int root
+            procParams.comm     // MPI_Comm comm
+        );
+
+        if (targetFunctionValue <= localObjFnMin.objFn){
+            break;
+
+        } else {
+
+            // Patching medoidsIndexes multitude in all processes
+            medoidsIndexes.erase(localObjFnMin.objFn_m_s);
+            nonMedoidsIndexes.insert(localObjFnMin.objFn_m_s);
+            medoidsIndexes.insert(localObjFnMin.objFn_o_h);
+            nonMedoidsIndexes.erase(localObjFnMin.objFn_o_h);
+            targetFunctionValue = localObjFnMin.objFn;
+        }
+
+        // sleep(1);
+        int rank;
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        if (rank == 0)
+            Dump();
 
         iterationsCounter ++;
         if (itMax != 0 && iterationsCounter < itMax ){
             break;
         }
     }
+
+    delete [] min_m_s;
 }
 
 // ==================================================================================================================================================
@@ -230,9 +358,15 @@ void PAM::Dump (const string& fout_str) const{
     }
     fout << endl;
 
+    fout << "nonMedoidsIndexes:" << endl;
+    for (auto it = nonMedoidsIndexes.begin(); it != nonMedoidsIndexes.end(); it++){
+        fout << *it << " ";
+    }
+    fout << endl;
+
     fout << "distanceMatrix:" << endl << std::fixed;
-    for (int i = 0; i < n; i++){
-        for (int j = 0; j < n; j++){
+    for (unsigned int i = 0; i < n; i++){
+        for (unsigned int j = 0; j < n; j++){
             fout << std::setprecision(5) << distanceMatrix[i*n + j] << " ";
         }
         fout << endl;
@@ -240,4 +374,15 @@ void PAM::Dump (const string& fout_str) const{
 
     fout << "========== Dump end ==========" << endl;
     fout.close();
+}
+
+// ==================================================================================================================================================
+//                                                                                                                     AM::CheckParametersCorrectness
+// ==================================================================================================================================================
+bool PAM::CheckParametersCorrectness () const{
+    if (k <= 0 or k > n or medoidsIndexes.size() + nonMedoidsIndexes.size() != n){
+        return false;
+    } else {
+        return true;
+    }
 }

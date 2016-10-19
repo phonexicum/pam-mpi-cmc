@@ -26,11 +26,11 @@ using std::istringstream;
 // ==================================================================================================================================================
 struct InputData {
 
-    const int n; // Size of multitude (vectors in R^m)
-    const int m; // vector dimension (vector is point in R^m)
+    unsigned const int n; // Size of multitude (vectors in R^m)
+    unsigned const int m; // vector dimension (vector is point in R^m)
     double* vectors;
 
-    InputData(const int n, const int m, const string& fin_str);
+    InputData(const unsigned int n, const unsigned int m, const string& fin_str);
     ~InputData();
 
     // FUTURE WORK: Calculations of distance matrix can be parallelized
@@ -56,12 +56,12 @@ int main(int argc, char* argv[]){
         return 0;
     }
 
-    int n; istringstream(argv[1]) >> n;
-    int m; istringstream(argv[2]) >> m;
-    int k; istringstream(argv[3]) >> k;
+    unsigned int n; istringstream(argv[1]) >> n;
+    unsigned int m; istringstream(argv[2]) >> m;
+    unsigned int k; istringstream(argv[3]) >> k;
     string input_file = string(argv[4]);
     string output_file = string(argv[5]);
-    int t; istringstream(argv[6]) >> t;
+    unsigned int t; istringstream(argv[6]) >> t;
 
     // ================================
     MPI_Init(&argc,&argv); // Start MPI
@@ -71,7 +71,9 @@ int main(int argc, char* argv[]){
 
     InputData inputData (n, m, input_file);
 
-    PAM pam (n, k, inputData.GenerateDistanceMatrix());
+    double* distanceMatrix = inputData.GenerateDistanceMatrix();
+
+    PAM pam (n, k, distanceMatrix);
 
     inputData.~InputData();
 
@@ -90,18 +92,21 @@ int main(int argc, char* argv[]){
 
         fstream fout (output_file, fstream::out | fstream::app);
         fout << "n= " << n << " m= " << m << " k= " << k << " t= " << t << endl;
-        fout << "timeDuration= " << std::chrono::duration_cast<std::chrono::nanoseconds>(finishClock - startClock).count() << " nano-seconds" << endl;
+        fout << "timeDuration= " << std::chrono::duration_cast<std::chrono::nanoseconds>(finishClock - startClock).count() << " nano-seconds = "
+             << std::chrono::duration_cast<std::chrono::milliseconds>(finishClock - startClock).count() << " milli-seconds" << endl;
         fout << "iterations= " << pam.getIterationsCounter() << endl;
         fout << "targetFunctionValue= " << pam.getTargetFunctionValue() << endl;
         fout << "Medoids(points-indexes):" << endl;
 
-        set<int> medoidsIndexes = pam.getMedoids();
+        set<unsigned int> medoidsIndexes = pam.getMedoids();
         for (auto it = medoidsIndexes.begin(); it != medoidsIndexes.end(); it++){
             fout << *it << " ";
         }
         fout << endl;
         fout.close();
     }
+
+    delete [] distanceMatrix; distanceMatrix = NULL;
 
     // ========================
     MPI_Finalize(); // Stop MPI
@@ -113,14 +118,14 @@ int main(int argc, char* argv[]){
 // ==================================================================================================================================================
 //                                                                                                                               InputData::InputData
 // ==================================================================================================================================================
-InputData::InputData(const int n_, const int m_, const string& fin_str):
+InputData::InputData(const unsigned int n_, const unsigned int m_, const string& fin_str):
 n(n_), m(m_)
 {
     fstream fin(fin_str.c_str(), fstream::in);
 
     vectors = new double [n*m];
-    for (int i = 0; i < n; i++){
-        for (int j = 0; j < m; j++){
+    for (unsigned int i = 0; i < n; i++){
+        for (unsigned int j = 0; j < m; j++){
             fin >> vectors[i*m + j];
         }
     }
@@ -142,11 +147,11 @@ double* InputData::GenerateDistanceMatrix() const{
 
     double* distanceMatrix = new double [n*n];
 
-    for (int i = 0; i < n; i++){
+    for (unsigned int i = 0; i < n; i++){
         distanceMatrix[i*n + i] = 0;
-        for (int j = i+1; j < n; j++){
+        for (unsigned int j = i+1; j < n; j++){
             double rho = 0;
-            for (int k = 0; k < m; k++){
+            for (unsigned int k = 0; k < m; k++){
                 double diff = vectors[i*m + k] - vectors[j*m + k];
                 rho += diff * diff;
             }

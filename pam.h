@@ -12,12 +12,14 @@ using std::string;
 struct ProcParams {
     int rank;
     int size;
+    MPI_Comm comm;
 
         public:
     
     ProcParams(){
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);   // get current process id
         MPI_Comm_size (MPI_COMM_WORLD, &size);  // get number of processes
+        comm = MPI_COMM_WORLD;
     }
 };
 
@@ -26,19 +28,10 @@ struct ProcParams {
 // ==================================================================================================================================================
 class PAM {
 
-    const int n; // Multitude power
-    const int k; // Clusters number
-    const double* distanceMatrix;
-
-    set<int> medoidsIndexes;
-    int iterationsCounter;
-    double targetFunctionValue;
-
-    ProcParams procParams;
-
         public:
+
     // PAM will take ownership on distanceMatrix_ and delete it in its destructor
-    PAM(const int n_, const int k_, double* distanceMatrix_);
+    PAM(const unsigned int n_, const unsigned int k_, double* distanceMatrix_);
     ~PAM();
 
     // FUTURE WORK: BuildPhase calculation can be parallelized
@@ -50,13 +43,42 @@ class PAM {
     // 
     // itMax - maximum number of iterations
     // 
-    void SwapPhase (const ProcParams& procParams, const int itMax);
+    void SwapPhase (const ProcParams& procParams, const unsigned int itMax);
 
-    void Dump (const string& fout_str) const;
+    void Dump (const string& fout_str = string("output.txt")) const;
 
     double getTargetFunctionValue() { return targetFunctionValue; }
-    set<int> getMedoids ()          { return medoidsIndexes; }
-    int getK()                      { return k; }
-    int getIterationsCounter()      { return iterationsCounter; }
+    set<unsigned int> getMedoids ()          { return medoidsIndexes; }
+    unsigned int getK()                      { return k; }
+    unsigned int getIterationsCounter()      { return iterationsCounter; }
+
+        private:
+
+    const unsigned int n; // Multitude power
+    const unsigned int k; // Clusters number
+    const double* distanceMatrix;
+
+    set<unsigned int> medoidsIndexes;
+    set<unsigned int> nonMedoidsIndexes;
+    unsigned int iterationsCounter;
+    double targetFunctionValue;
+
+    ProcParams procParams;
+
+    bool CheckParametersCorrectness() const;
+
+        private:
+
+    struct MPIMessage {
+        double objFn = 0;
+        unsigned int objFn_m_s = 0;
+        unsigned int objFn_o_h = 0;
+    };
+
+    enum MPIMessageTypes {
+        FirstStepAgregation,
+        SecondStepAgregation,
+        BroadCastNewModifications
+    };
 
 };
