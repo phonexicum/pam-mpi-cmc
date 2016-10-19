@@ -70,9 +70,11 @@ class PAM {
         private:
 
     struct MPIMessage {
-        double objFn = 0;
-        unsigned int objFn_m_s = 0;
-        unsigned int objFn_o_h = 0;
+        double objFn;
+        unsigned int objFn_m_s;
+        unsigned int objFn_o_h;
+
+        MPIMessage(): objFn(0), objFn_m_s(0), objFn_o_h(0) {}
     };
 
     enum MPIMessageTypes {

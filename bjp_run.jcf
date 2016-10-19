@@ -1,0 +1,10 @@
+# @ job_type = bluegene
+# @ bg_connection = PREFER_TORUS
+# @ class = small
+# @ output = $(jobid).out
+# @ error = $(jobid).err
+# @ wall_clock_limit = 00:15:00
+# @ bg_size = 128
+# @ queue
+
+/bgsys/drivers/ppcfloor/bin/mpirun -mode DUAL -exe /home/edu-cmc-stud16-621-02/pam 4 2 2 test_data.txt output.txt 0
