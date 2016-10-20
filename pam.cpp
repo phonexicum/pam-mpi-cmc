@@ -117,9 +117,141 @@ void PAM::BuildPhaseConsecutive (){
 }
 
 // ==================================================================================================================================================
-//                                                                                                                                     PAM::SwapPhase
+//                                                                                                                            PAM::BuildPhaseParallel
 // ==================================================================================================================================================
-void PAM::SwapPhase (const ProcParams& procParams, const unsigned int itMax){
+void PAM::BuildPhaseParallel (const ProcParams& procParams){
+
+    if (not CheckParametersCorrectness())
+        return;
+
+    // computation of task's positions for current process from calculation graph
+
+    MPIMessageBUILD localObjFnMin;
+    double* previousMIN = new double [n];
+    
+    for (unsigned int buildIterationsCounter = 0; buildIterationsCounter < k; buildIterationsCounter++){
+
+        unsigned int tasksNum = nonMedoidsIndexes.size();
+        unsigned int tasksPerProcess = std::ceil(static_cast<double>(tasksNum) / procParams.size);
+        unsigned int absolutePosition = procParams.rank * tasksPerProcess;
+
+        if (absolutePosition < tasksNum){
+
+            set<unsigned int>::iterator bestNonMedoid = nonMedoidsIndexes.end();
+            auto it = nonMedoidsIndexes.begin();
+            for (unsigned int i = 0; i < absolutePosition; i++)
+                it++;
+            bool firstAttempt = true;
+
+            for (unsigned int i = 0; i < tasksPerProcess and it != nonMedoidsIndexes.end(); i++, it++){
+
+                // Counting sum of mins
+                double sum = 0;
+                if (medoidsIndexes.size() == 0){
+                    for (unsigned int j = 0; j < n; j++){
+                        sum += distanceMatrix[(*it)*n + j];
+                    }
+                } else {
+                    for (unsigned int j = 0; j < n; j++){
+                        sum += std::min(previousMIN[j], distanceMatrix[(*it)*n + j]);
+                    }
+                }
+
+                if (firstAttempt or localObjFnMin.objFn > sum) {
+                    localObjFnMin.objFn = sum;
+                    localObjFnMin.objFn_o_h = *it;
+                    firstAttempt = false;
+                }
+            }
+
+            if (procParams.rank != 0){
+                // Send minSum
+                int ret = MPI_Ssend(
+                    &localObjFnMin,                         // void* buffer
+                    sizeof(MPIMessageBUILD),                // int count
+                    MPI_BYTE,                               // MPI_Datatype datatype
+                    0,                                      // int dest
+                    MPIMessageTypes::BUILD_AgregationStep,  // int tag
+                    procParams.comm                         // MPI_Comm comm
+                );
+
+                // fstream ("output.txt", fstream::out | fstream::app) << "send " << procParams.rank << "->" << 0 << " message = " << localObjFnMin.objFn << " " << localObjFnMin.objFn_o_h << " BUILD_AgregationStep" << endl;
+                
+                if (ret != MPI_SUCCESS){
+                    cout << "Fatal error. '" << procParams.rank << "' failed to send data 'MPIMessageBUILD' to '0' on BUILD_AgregationStep step. Continuing to process data, however program will probably hang." << endl;
+                }
+
+            } else {
+                for (unsigned int i = 1; i < tasksNum / tasksPerProcess; i++){
+
+                    MPI_Status status;
+                    MPIMessageBUILD incomingObjFnMin;
+
+                    // I do not care about order of incoming messages from other processes, but I know how many there is messages to be received
+                    int ret = MPI_Recv(
+                        &incomingObjFnMin,                      // void *buf
+                        sizeof(MPIMessageBUILD),                // int count
+                        MPI_BYTE,                               // MPI_Datatype datatype
+                        MPI_ANY_SOURCE,                         // int source
+                        MPIMessageTypes::BUILD_AgregationStep,  // int tag
+                        procParams.comm,                        // MPI_Comm comm
+                        &status                                 // MPI_Status *status
+                    );
+
+                    // fstream ("output.txt", fstream::out | fstream::app) << "recv " << procParams.rank << "<-" << status.MPI_SOURCE << " message = " << incomingObjFnMin.objFn << " " << incomingObjFnMin.objFn_o_h << " BUILD_AgregationStep" << endl;
+                    
+                    if (ret != MPI_SUCCESS){
+                        cout << "Error. Some problems in receiving 'MPIMessageBUILD' on step 'BUILD_AgregationStep', skipping error and continuing work.";
+                    } else {
+                        if (localObjFnMin.objFn > incomingObjFnMin.objFn){
+                            localObjFnMin.objFn = incomingObjFnMin.objFn;
+                            localObjFnMin.objFn_o_h = incomingObjFnMin.objFn_o_h;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Broadcasting localObjFnMin from process of rank = 0
+        MPI_Bcast(
+            &localObjFnMin,             // void* buffer
+            sizeof(MPIMessageBUILD),    // int count
+            MPI_BYTE,                   // MPI_Datatype datatype
+            0,                          // int root
+            procParams.comm             // MPI_Comm comm
+        );
+
+
+        if (medoidsIndexes.size() == 0){
+            for (unsigned int i = 0; i < n; i++){
+                previousMIN[i] = distanceMatrix[localObjFnMin.objFn_o_h * n + i];
+            }
+        } else {
+            for (unsigned int i = 0; i < n; i++){
+                previousMIN[i] = std::min(previousMIN[i], distanceMatrix[localObjFnMin.objFn_o_h * n + i]);
+            }
+        }
+        targetFunctionValue = localObjFnMin.objFn;
+        medoidsIndexes.insert(localObjFnMin.objFn_o_h);
+        nonMedoidsIndexes.erase(localObjFnMin.objFn_o_h);
+
+
+        // sleep(1);
+        int rank;
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        if (rank == 0){
+            Dump();
+        }
+
+    }
+
+    delete [] previousMIN;
+}
+
+// ==================================================================================================================================================
+//                                                                                                                             PAM::SwapPhaseParallel
+// ==================================================================================================================================================
+void PAM::SwapPhaseParallel (const ProcParams& procParams, const unsigned int itMax){
 
     // sleep(1);
     // fstream("output.txt", fstream::out | fstream::app) << "SwapPhase" << endl;
@@ -148,7 +280,7 @@ void PAM::SwapPhase (const ProcParams& procParams, const unsigned int itMax){
 
         // Calculation of best minSum and arguments m_s and o_h
 
-        MPIMessage localObjFnMin;
+        MPIMessageSWAP localObjFnMin;
 
         bool firstTimeCalculation = true;
         auto m_s = medoidsIndexes.begin();
@@ -211,16 +343,16 @@ void PAM::SwapPhase (const ProcParams& procParams, const unsigned int itMax){
             // Send minSum
             int ret = MPI_Ssend(
                 &localObjFnMin,                         // void* buffer
-                sizeof(MPIMessage),                     // int count
+                sizeof(MPIMessageSWAP),                     // int count
                 MPI_BYTE,                               // MPI_Datatype datatype
                 procParams.rank % agregate_proc_amount, // int dest
-                MPIMessageTypes::FirstStepAgregation,   // int tag
+                MPIMessageTypes::SWAP_FirstStepAgregation,   // int tag
                 procParams.comm                         // MPI_Comm comm
             );
 
-            // fstream ("output.txt", fstream::out | fstream::app) << "send " << procParams.rank << "->" << procParams.rank % agregate_proc_amount << " message = " << localObjFnMin.objFn << " " << localObjFnMin.objFn_m_s << " " << localObjFnMin.objFn_o_h << " FirstStepAgregation" << endl;
+            // fstream ("output.txt", fstream::out | fstream::app) << "send " << procParams.rank << "->" << procParams.rank % agregate_proc_amount << " message = " << localObjFnMin.objFn << " " << localObjFnMin.objFn_m_s << " " << localObjFnMin.objFn_o_h << " SWAP_FirstStepAgregation" << endl;
             if (ret != MPI_SUCCESS){
-                cout << "Fatal error. '" << procParams.rank << "' failed to send data 'MPIMessage' to '" << procParams.rank % agregate_proc_amount << "' on FirstStepAgregation step. Continuing to process data, however program will probably hang." << endl;
+                cout << "Fatal error. '" << procParams.rank << "' failed to send data 'MPIMessageSWAP' to '" << procParams.rank % agregate_proc_amount << "' on SWAP_FirstStepAgregation step. Continuing to process data, however program will probably hang." << endl;
             }
 
         } else {
@@ -228,22 +360,22 @@ void PAM::SwapPhase (const ProcParams& procParams, const unsigned int itMax){
             for (int i = agregate_proc_amount + procParams.rank; i < std::min(procParams.size, static_cast<int>(tasksNum)); i+= agregate_proc_amount){
 
                 MPI_Status status;
-                MPIMessage incomingObjFnMin;
+                MPIMessageSWAP incomingObjFnMin;
 
                 // I do not care about order of incoming messages from other processes, but I know how many there is messages to be received
                 int ret = MPI_Recv(
                     &incomingObjFnMin,                      // void *buf
-                    sizeof(MPIMessage),                     // int count
+                    sizeof(MPIMessageSWAP),                     // int count
                     MPI_BYTE,                               // MPI_Datatype datatype
                     MPI_ANY_SOURCE,                         // int source
-                    MPIMessageTypes::FirstStepAgregation,   // int tag
+                    MPIMessageTypes::SWAP_FirstStepAgregation,   // int tag
                     procParams.comm,                        // MPI_Comm comm
                     &status                                 // MPI_Status *status
                 );
 
-                // fstream ("output.txt", fstream::out | fstream::app) << "recv " << procParams.rank << "<-" << status.MPI_TAG << " message = " << incomingObjFnMin.objFn << " " << incomingObjFnMin.objFn_m_s << " " << incomingObjFnMin.objFn_o_h << " FirstStepAgregation" << endl;
+                // fstream ("output.txt", fstream::out | fstream::app) << "recv " << procParams.rank << "<-" << status.MPI_TAG << " message = " << incomingObjFnMin.objFn << " " << incomingObjFnMin.objFn_m_s << " " << incomingObjFnMin.objFn_o_h << " SWAP_FirstStepAgregation" << endl;
                 if (ret != MPI_SUCCESS){
-                    cout << "Error. Some problems in receiving 'MPIMessage' on step 'FirstStepAgregation', skipping error and continuing work.";
+                    cout << "Error. Some problems in receiving 'MPIMessageSWAP' on step 'SWAP_FirstStepAgregation', skipping error and continuing work.";
                 } else {
                     if (localObjFnMin.objFn > incomingObjFnMin.objFn){
                         localObjFnMin.objFn = incomingObjFnMin.objFn;
@@ -259,38 +391,38 @@ void PAM::SwapPhase (const ProcParams& procParams, const unsigned int itMax){
                 // Send minSum
                 int ret = MPI_Ssend(
                     &localObjFnMin,                         // void* buffer
-                    sizeof(MPIMessage),                     // int count
+                    sizeof(MPIMessageSWAP),                     // int count
                     MPI_BYTE,                               // MPI_Datatype datatype
                     0,                                      // int dest
-                    MPIMessageTypes::SecondStepAgregation,  // int tag
+                    MPIMessageTypes::SWAP_SecondStepAgregation,  // int tag
                     procParams.comm                         // MPI_Comm comm
                 );
 
-                // fstream ("output.txt", fstream::out | fstream::app) << "send " << procParams.rank << "->" << 0 << " message = " << localObjFnMin.objFn << " " << localObjFnMin.objFn_m_s << " " << localObjFnMin.objFn_o_h << " SecondStepAgregation" << endl;
+                // fstream ("output.txt", fstream::out | fstream::app) << "send " << procParams.rank << "->" << 0 << " message = " << localObjFnMin.objFn << " " << localObjFnMin.objFn_m_s << " " << localObjFnMin.objFn_o_h << " SWAP_SecondStepAgregation" << endl;
                 if (ret != MPI_SUCCESS){
-                    cout << "Fatal error. '" << procParams.rank << "' failed to send data 'MPIMessage' to '0' on SecondStepAgregation step. Continuing to process data, however program will probably hang." << endl;
+                    cout << "Fatal error. '" << procParams.rank << "' failed to send data 'MPIMessageSWAP' to '0' on SWAP_SecondStepAgregation step. Continuing to process data, however program will probably hang." << endl;
                 }
 
             } else {
                 for (int i = 1; i < agregate_proc_amount; i++){
 
                     MPI_Status status;
-                    MPIMessage incomingObjFnMin;
+                    MPIMessageSWAP incomingObjFnMin;
 
                     // I do not care about order of incoming messages from other processes, but I know how many there is messages to be received
                     int ret = MPI_Recv(
                         &incomingObjFnMin,                      // void *buf
-                        sizeof(MPIMessage),                     // int count
+                        sizeof(MPIMessageSWAP),                     // int count
                         MPI_BYTE,                               // MPI_Datatype datatype
                         MPI_ANY_SOURCE,                         // int source
-                        MPIMessageTypes::SecondStepAgregation,  // int tag
+                        MPIMessageTypes::SWAP_SecondStepAgregation,  // int tag
                         procParams.comm,                        // MPI_Comm comm
                         &status                                 // MPI_Status *status
                     );
 
-                    // fstream ("output.txt", fstream::out | fstream::app) << "recv " << procParams.rank << "<-" << status.MPI_SOURCE << " message = " << incomingObjFnMin.objFn << " " << incomingObjFnMin.objFn_m_s << " " << incomingObjFnMin.objFn_o_h << " SecondStepAgregation" << endl;
+                    // fstream ("output.txt", fstream::out | fstream::app) << "recv " << procParams.rank << "<-" << status.MPI_SOURCE << " message = " << incomingObjFnMin.objFn << " " << incomingObjFnMin.objFn_m_s << " " << incomingObjFnMin.objFn_o_h << " SWAP_SecondStepAgregation" << endl;
                     if (ret != MPI_SUCCESS){
-                        cout << "Error. Some problems in receiving 'MPIMessage' on step 'SecondStepAgregation', skipping error and continuing work.";
+                        cout << "Error. Some problems in receiving 'MPIMessageSWAP' on step 'SWAP_SecondStepAgregation', skipping error and continuing work.";
                     } else {
                         if (localObjFnMin.objFn > incomingObjFnMin.objFn){
                             localObjFnMin.objFn = incomingObjFnMin.objFn;
@@ -305,7 +437,7 @@ void PAM::SwapPhase (const ProcParams& procParams, const unsigned int itMax){
         // Broadcasting localObjFnMin from process of rank = 0
         MPI_Bcast(
             &localObjFnMin,     // void* buffer
-            sizeof(MPIMessage), // int count
+            sizeof(MPIMessageSWAP), // int count
             MPI_BYTE,           // MPI_Datatype datatype
             0,                  // int root
             procParams.comm     // MPI_Comm comm

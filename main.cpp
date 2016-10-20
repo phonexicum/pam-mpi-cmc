@@ -77,11 +77,12 @@ int main(int argc, char* argv[]){
 
     inputData.~InputData();
 
-    pam.BuildPhaseConsecutive();
+    // pam.BuildPhaseConsecutive();
 
     auto startClock = std::chrono::high_resolution_clock::now();
 
-    pam.SwapPhase(procParams, t);
+    pam.BuildPhaseParallel(procParams);
+    pam.SwapPhaseParallel(procParams, t);
 
     auto finishClock = std::chrono::high_resolution_clock::now();
 

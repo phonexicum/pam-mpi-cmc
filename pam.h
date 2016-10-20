@@ -36,6 +36,7 @@ class PAM {
 
     // FUTURE WORK: BuildPhase calculation can be parallelized
     void BuildPhaseConsecutive ();
+    void BuildPhaseParallel (const ProcParams& procParams);
 
     // SwapPhase is parallelized
     // 
@@ -43,7 +44,7 @@ class PAM {
     // 
     // itMax - maximum number of iterations
     // 
-    void SwapPhase (const ProcParams& procParams, const unsigned int itMax);
+    void SwapPhaseParallel (const ProcParams& procParams, const unsigned int itMax);
 
     void Dump (const string& fout_str = string("output.txt")) const;
 
@@ -69,18 +70,26 @@ class PAM {
 
         private:
 
-    struct MPIMessage {
+    struct MPIMessageBUILD {
+        double objFn;
+        unsigned int objFn_o_h;
+
+        MPIMessageBUILD(): objFn(0), objFn_o_h(0) {}
+    };
+
+    struct MPIMessageSWAP {
         double objFn;
         unsigned int objFn_m_s;
         unsigned int objFn_o_h;
 
-        MPIMessage(): objFn(0), objFn_m_s(0), objFn_o_h(0) {}
+        MPIMessageSWAP(): objFn(0), objFn_m_s(0), objFn_o_h(0) {}
     };
 
     enum MPIMessageTypes {
-        FirstStepAgregation,
-        SecondStepAgregation,
-        BroadCastNewModifications
+        SWAP_FirstStepAgregation,
+        SWAP_SecondStepAgregation,
+        SWAP_BroadCastNewModifications,
+        BUILD_AgregationStep
     };
 
 };
