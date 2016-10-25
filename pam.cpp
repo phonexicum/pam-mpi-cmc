@@ -366,8 +366,9 @@ void PAM::SwapPhaseParallel (const ProcParams& procParams, const unsigned int it
 
         } else {
             // Getting sended minimums, by other processes and counting minimum
-            for (int i = agregate_proc_amount + procParams.rank; i < procParams.size; i+= agregate_proc_amount){
-            // for (int i = agregate_proc_amount + procParams.rank; i < std::min(procParams.size, static_cast<int>(tasksNum)); i+= agregate_proc_amount){
+            // for (int i = agregate_proc_amount + procParams.rank; i < procParams.size; i+= agregate_proc_amount) {
+            for (int i = agregate_proc_amount + procParams.rank; i < std::ceil(static_cast<float>(tasksNum) / tasksPerProcess); i+= agregate_proc_amount) {
+            // for (int i = agregate_proc_amount + procParams.rank; i < std::min(procParams.size, static_cast<int>(tasksNum)); i+= agregate_proc_amount) {
 
                 MPI_Status status;
                 MPIMessageSWAP incomingObjFnMin;
