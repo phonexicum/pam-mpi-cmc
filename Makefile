@@ -7,8 +7,10 @@ pam: main.cpp pam.cpp pam.h
 .PHONY: clean
 
 run:
-	mpirun -np 5 ./pam 11 2 3 test_data.txt output.txt 0
+	# mpirun -np 4 ./pam 11 2 3 input_data.txt output.txt 0
 # ./binary n m k input_data.txt output_data.txt t
+	
+	mpirun -np 4 ./pam settings.txt input_data.txt output.txt
 
 clean:
-	rm -f pam output.txt
+	rm -f pam output.txt working.txt

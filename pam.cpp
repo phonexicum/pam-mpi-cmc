@@ -16,7 +16,7 @@ using std::cout;
 // ==================================================================================================================================================
 //                                                                                                                                           PAM::PAM
 // ==================================================================================================================================================
-PAM::PAM(const unsigned int n_, const unsigned int k_, double* distanceMatrix_):
+PAM::PAM(const unsigned int n_, const unsigned int k_, const double* distanceMatrix_):
 n(n_), k(k_),
 distanceMatrix(distanceMatrix_),
 iterationsCounter(0),
@@ -241,12 +241,12 @@ void PAM::BuildPhaseParallel (const ProcParams& procParams){
 
         if (debug) sleep(1);
 
-        int rank;
-        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-        if (rank == 0){
-            Dump();
-        }
-
+        // int rank;
+        // MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        // if (rank == 0){
+        //     Dump();
+        // }
+        // fstream("working.txt", fstream::out | fstream::app) << "1";
     }
 
     delete [] previousMIN;
@@ -471,10 +471,11 @@ void PAM::SwapPhaseParallel (const ProcParams& procParams, const unsigned int it
 
         if (debug) sleep(1);
 
-        int rank;
-        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-        if (rank == 0)
-            Dump();
+        // int rank;
+        // MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        // if (rank == 0)
+        //     Dump();
+        // fstream("working.txt", fstream::out | fstream::app) << "0";
 
         iterationsCounter ++;
         if (itMax != 0 && iterationsCounter < itMax ){

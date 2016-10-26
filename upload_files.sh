@@ -13,3 +13,5 @@ cp test_data.txt ./sc-mount/
 cp main.cpp ./sc-mount/ 
 cp pam.cpp ./sc-mount/ 
 cp pam.h ./sc-mount/ 
+
+cp -R settings* ./sc-mount/ 

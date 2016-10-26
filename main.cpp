@@ -8,7 +8,9 @@
 // #include <ctime>
 #include <chrono>
 // #include <algorithm>
+#include <vector>
 #include <set>
+#include <utility>
 
 #include "pam.h"
 
@@ -18,6 +20,9 @@ using std::cout;
 using std::endl;
 using std::set;
 using std::istringstream;
+using std::vector;
+using std::pair;
+using std::make_pair;
 // using std::clock;
 // using std::clock_t;
 
@@ -40,12 +45,91 @@ struct InputData {
 // ==================================================================================================================================================
 //                                                                                                                                               MAIN
 // ==================================================================================================================================================
+
+void Benchmark (const int n, const int k, const int p, const int m, const string fin_name, const string fout_name){
+
+    MPI_Barrier (MPI_COMM_WORLD);
+
+    // MPI initialization
+    // 
+    ProcParams procParams;
+    if (procParams.size < p) {
+        cout << "Error. number of processes '" << procParams.size << "' is less then required= " << p << endl;
+    }
+
+    MPI_Comm currentComm;
+    if (procParams.rank < p){
+        MPI_Comm_split(MPI_COMM_WORLD, 1, procParams.rank, &currentComm);
+    } else {
+        MPI_Comm_split(MPI_COMM_WORLD, MPI_UNDEFINED, procParams.rank, &currentComm);
+    }
+
+    if (currentComm != MPI_COMM_NULL){
+
+        procParams = ProcParams(currentComm);
+
+
+        // algorithm initialization
+        // 
+        InputData inputData (n, m, fin_name);
+        double* distanceMatrix = inputData.GenerateDistanceMatrix();
+        PAM pam (n, k, distanceMatrix);
+        inputData.~InputData();
+
+        // algorithm run
+        // 
+        MPI_Barrier (currentComm);
+        auto startClock = std::chrono::high_resolution_clock::now();
+        auto medianClock = std::chrono::high_resolution_clock::now();
+        if (procParams.rank < procParams.size){
+
+            pam.BuildPhaseParallel(procParams);
+            medianClock = std::chrono::high_resolution_clock::now();
+            pam.SwapPhaseParallel(procParams, 0);
+
+        }
+        auto finishClock = std::chrono::high_resolution_clock::now();
+        MPI_Barrier (currentComm);
+
+
+        delete [] distanceMatrix; distanceMatrix = NULL;
+
+        // MPI free
+        MPI_Comm_free (&currentComm);
+
+
+        // algorithm results
+        if (procParams.rank == 0){
+
+            fstream fout (fout_name, fstream::out | fstream::app);
+            fout << "n= " << n << " m= " << m << " k= " << k << " p= " << p << endl;
+            fout << "buildTimeDuration= " << std::chrono::duration_cast<std::chrono::nanoseconds>(medianClock - startClock).count() << " nano-seconds" << endl;
+            fout << "swapTimeDuration= " << std::chrono::duration_cast<std::chrono::nanoseconds>(finishClock - medianClock).count() << " nano-seconds" << endl;
+            fout << "overalTimeDuration= " << std::chrono::duration_cast<std::chrono::nanoseconds>(finishClock - startClock).count() << " nano-seconds" << endl;
+            // fout << "iterations= " << pam.getIterationsCounter() << endl;
+            // fout << "targetFunctionValue= " << pam.getTargetFunctionValue() << endl;
+            // fout << "Medoids(points-indexes):" << endl;
+
+            // set<unsigned int> medoidsIndexes = pam.getMedoids();
+            // for (auto it = medoidsIndexes.begin(); it != medoidsIndexes.end(); it++){
+            //     fout << *it << " ";
+            // }
+            fout << endl;
+            fout.close();
+        }
+    }
+}
+
+// ==================================================================================================================================================
+//                                                                                                                                               MAIN
+// ==================================================================================================================================================
 int main(int argc, char* argv[]){
 
     // Input checking
 
-    if (argc != 7){
-        cout << "Wrong parameters. Usage: './binary n m k input_data.txt output_data.txt t'" << endl;
+    if (argc != 4){
+        // cout << "Wrong parameters. Usage: './binary n m k input_data.txt output_data.txt t'" << endl;
+        cout << "Wrong parameters. Usage: './binary settings.txt input_data.txt output_data.txt'" << endl;
         // argv[0] - pointer to binary name
         // argv[1] - pointer to number n - multitude power
         // argv[2] - pointer to number m - vector length
@@ -56,58 +140,37 @@ int main(int argc, char* argv[]){
         return 0;
     }
 
-    unsigned int n; istringstream(argv[1]) >> n;
-    unsigned int m; istringstream(argv[2]) >> m;
-    unsigned int k; istringstream(argv[3]) >> k;
-    string input_file = string(argv[4]);
-    string output_file = string(argv[5]);
-    unsigned int t; istringstream(argv[6]) >> t;
+    // unsigned int n; istringstream(argv[1]) >> n;
+    // unsigned int m; istringstream(argv[2]) >> m;
+    // unsigned int k; istringstream(argv[3]) >> k;
+    // string input_file = string(argv[4]);
+    // string output_file = string(argv[5]);
+    // unsigned int t; istringstream(argv[6]) >> t;
+
+    string settings_file = string(argv[1]);
+    string input_file = string(argv[2]);
+    string output_file = string(argv[3]);
 
     // ================================
     MPI_Init(&argc,&argv); // Start MPI
     // ================================
 
-    ProcParams procParams;
+    fstream settings_fin (settings_file.c_str(), fstream::in);
+    vector<pair<int, int>> settings;
+    while (settings_fin.eof() == false) {
+        int matrix, p;
+        settings_fin >> matrix >> p;
+        settings.push_back(make_pair(matrix, p));
+    }
+    settings_fin.close();
 
-    InputData inputData (n, m, input_file);
-
-    double* distanceMatrix = inputData.GenerateDistanceMatrix();
-
-    PAM pam (n, k, distanceMatrix);
-
-    inputData.~InputData();
-
-    // pam.BuildPhaseConsecutive();
-
-    auto startClock = std::chrono::high_resolution_clock::now();
-
-    pam.BuildPhaseParallel(procParams);
-    pam.SwapPhaseParallel(procParams, t);
-
-    auto finishClock = std::chrono::high_resolution_clock::now();
-
-    // Output results
-    if (procParams.rank == 0){
-
-        // double PAMduration = ( clock() - startClock ) / (double) CLOCKS_PER_SEC;
-
-        fstream fout (output_file, fstream::out | fstream::app);
-        fout << "n= " << n << " m= " << m << " k= " << k << " t= " << t << endl;
-        fout << "timeDuration= " << std::chrono::duration_cast<std::chrono::nanoseconds>(finishClock - startClock).count() << " nano-seconds = "
-             << std::chrono::duration_cast<std::chrono::milliseconds>(finishClock - startClock).count() << " milli-seconds" << endl;
-        fout << "iterations= " << pam.getIterationsCounter() << endl;
-        fout << "targetFunctionValue= " << pam.getTargetFunctionValue() << endl;
-        fout << "Medoids(points-indexes):" << endl;
-
-        set<unsigned int> medoidsIndexes = pam.getMedoids();
-        for (auto it = medoidsIndexes.begin(); it != medoidsIndexes.end(); it++){
-            fout << *it << " ";
+    for (auto it = settings.begin(); it != settings.end(); it++){
+        for (int i = 0; i < 3; i++){
+            Benchmark (it->first, it->first / 50, it->second, 5, input_file, output_file);
         }
-        fout << endl;
-        fout.close();
     }
 
-    delete [] distanceMatrix; distanceMatrix = NULL;
+    MPI_Barrier (MPI_COMM_WORLD);
 
     // ========================
     MPI_Finalize(); // Stop MPI

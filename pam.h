@@ -16,10 +16,10 @@ struct ProcParams {
 
         public:
     
-    ProcParams(){
-        MPI_Comm_rank(MPI_COMM_WORLD, &rank);   // get current process id
-        MPI_Comm_size (MPI_COMM_WORLD, &size);  // get number of processes
-        comm = MPI_COMM_WORLD;
+    ProcParams(MPI_Comm mpiComm = MPI_COMM_WORLD){
+        comm = mpiComm;
+        MPI_Comm_rank (comm, &rank); // get current process id
+        MPI_Comm_size (comm, &size); // get number of processes
     }
 };
 
@@ -31,7 +31,7 @@ class PAM {
         public:
 
     // PAM will take ownership on distanceMatrix_ and delete it in its destructor
-    PAM(const unsigned int n_, const unsigned int k_, double* distanceMatrix_);
+    PAM(const unsigned int n_, const unsigned int k_, const double* distanceMatrix_);
     ~PAM();
 
     // FUTURE WORK: BuildPhase calculation can be parallelized
