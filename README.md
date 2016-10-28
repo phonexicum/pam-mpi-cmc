@@ -30,21 +30,26 @@ to pass information to your programm put files into:
 
 
 ```
-sbatch -p regular4 -n 16 impi ./pam settings/regular-set-1.txt input_data.txt ./output/r4-out-1.txt
-sbatch -p regular4 -n 64 impi ./pam ./settings/regular-set-2.txt input_data.txt ./output/r4-out-2.txt
-sbatch -p regular4 -n 512 impi ./pam ./settings/regular-set-3.txt input_data.txt ./output/r4-out-3.txt
+sbatch -p regular4 -n 1024 impi ./pam settings/r4-set-1.txt input_data.txt ./output/r4-out-1.txt
+sbatch -p regular4 -n 384 impi ./pam ./settings/r4-set-2.txt input_data.txt ./output/r4-out-2.txt
+sbatch -p regular4 -n 1024 impi ./pam ./settings/r4-set-3.txt input_data.txt ./output/r4-out-3.txt
+
 sbatch -p regular6 -n 16 impi ./pam ./settings/regular-set-1.txt input_data.txt ./output/r6-out-1.txt
 sbatch -p regular6 -n 64 impi ./pam ./settings/regular-set-2.txt input_data.txt ./output/r6-out-2.txt
 sbatch -p regular6 -n 512 impi ./pam ./settings/regular-set-3.txt input_data.txt ./output/r6-out-3.txt
+
 sbatch -p smp -n 16 impi ./pam ./settings/smp-set-1.txt input_data.txt ./output/smp-out-1.txt
 sbatch -p smp -n 64 impi ./pam ./settings/smp-set-2.txt input_data.txt ./output/smp-out-2.txt
 sbatch -p smp -n 128 impi ./pam ./settings/smp-set-3.txt input_data.txt ./output/smp-out-3.txt
+
 sbatch -p hdd4 -n 16 impi ./pam ./settings/hdd4-set-1.txt input_data.txt ./output/hdd4-out-1.txt
 sbatch -p hdd4 -n 64 impi ./pam ./settings/hdd4-set-2.txt input_data.txt ./output/hdd4-out-2.txt
 sbatch -p hdd4 -n 256 impi ./pam ./settings/hdd4-set-3.txt input_data.txt ./output/hdd4-out-3.txt
+
 sbatch -p hdd6 -n 16 impi ./pam ./settings/hdd6-set-1.txt input_data.txt ./output/hdd6-out-1.txt
 sbatch -p hdd6 -n 64 impi ./pam ./settings/hdd6-set-2.txt input_data.txt ./output/hdd6-out-2.txt
 sbatch -p hdd6 -n 128 impi ./pam ./settings/hdd6-set-3.txt input_data.txt ./output/hdd6-out-3.txt
+
 sbatch -p gpu -n 16 impi ./pam ./settings/gpu-set-1.txt input_data.txt ./output/gpu-out-1.txt
 sbatch -p gpu -n 64 impi ./pam ./settings/gpu-set-2.txt input_data.txt ./output/gpu-out-2.txt
 sbatch -p gpu -n 256 impi ./pam ./settings/gpu-set-3.txt input_data.txt ./output/gpu-out-3.txt
