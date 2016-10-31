@@ -5,7 +5,7 @@ This repository contains **Partitioning Around Medoids (PAM)** algorithm written
 Considered supercomputers:
 
 - Lomonosov
-- Blue Gene/P
+- Blue Gene/P (g++ -std=gnu++98)
 - Regatta
 
 
