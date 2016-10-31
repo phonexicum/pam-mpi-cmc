@@ -1,7 +1,7 @@
 n= 25 m= 5 k= 2 p= 512
-buildTimeDuration= 1 milli-seconds
+buildTimeDuration= 0 milli-seconds
 swapTimeDuration= 0 milli-seconds
-overalTimeDuration= 1 milli-seconds
+overalTimeDuration= 0 milli-seconds
 iterations= 0
 
 n= 50 m= 5 k= 5 p= 512

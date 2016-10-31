@@ -57,7 +57,10 @@ data.sort(cmp=cmpFunc, reverse=False)
 def countGFlops(value):
     n = value["n"]
     k = value["k"]
-    return ((n * n * (2 * k - 1) - k * k * (n - 1 / 2) + n - (3 / 2) * k) + value["it"] * (k * n * n - 3 * n * k + k * k + (n - 1) * (n - k) * k)) / value["a-time"] / 1000000.0
+    overall_time = value["a-time"]
+    if overall_time == 0:
+        overall_time = 1
+    return ((n * n * (2 * k - 1) - k * k * (n - 1 / 2) + n - (3 / 2) * k) + value["it"] * (k * n * n - 3 * n * k + k * k + (n - 1) * (n - k) * k)) / overall_time / 1000000.0
 
 
 with open("gflops.dat", "w") as gnuplot_file:
