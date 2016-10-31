@@ -1,0 +1,210 @@
+n= 25 m= 5 k= 2 p= 256
+buildTimeDuration= 1 milli-seconds
+swapTimeDuration= 0 milli-seconds
+overalTimeDuration= 1 milli-seconds
+iterations= 0
+
+n= 50 m= 5 k= 5 p= 256
+buildTimeDuration= 1 milli-seconds
+swapTimeDuration= 1 milli-seconds
+overalTimeDuration= 2 milli-seconds
+iterations= 1
+
+n= 75 m= 5 k= 7 p= 256
+buildTimeDuration= 2 milli-seconds
+swapTimeDuration= 1 milli-seconds
+overalTimeDuration= 3 milli-seconds
+iterations= 2
+
+n= 100 m= 5 k= 10 p= 256
+buildTimeDuration= 3 milli-seconds
+swapTimeDuration= 3 milli-seconds
+overalTimeDuration= 6 milli-seconds
+iterations= 2
+
+n= 125 m= 5 k= 12 p= 256
+buildTimeDuration= 5 milli-seconds
+swapTimeDuration= 8 milli-seconds
+overalTimeDuration= 13 milli-seconds
+iterations= 5
+
+n= 150 m= 5 k= 15 p= 256
+buildTimeDuration= 7 milli-seconds
+swapTimeDuration= 15 milli-seconds
+overalTimeDuration= 22 milli-seconds
+iterations= 6
+
+n= 200 m= 5 k= 20 p= 256
+buildTimeDuration= 13 milli-seconds
+swapTimeDuration= 23 milli-seconds
+overalTimeDuration= 36 milli-seconds
+iterations= 9
+
+n= 25 m= 5 k= 2 p= 128
+buildTimeDuration= 0 milli-seconds
+swapTimeDuration= 1 milli-seconds
+overalTimeDuration= 1 milli-seconds
+iterations= 0
+
+n= 50 m= 5 k= 5 p= 128
+buildTimeDuration= 1 milli-seconds
+swapTimeDuration= 0 milli-seconds
+overalTimeDuration= 1 milli-seconds
+iterations= 1
+
+n= 75 m= 5 k= 7 p= 128
+buildTimeDuration= 2 milli-seconds
+swapTimeDuration= 1 milli-seconds
+overalTimeDuration= 3 milli-seconds
+iterations= 2
+
+n= 100 m= 5 k= 10 p= 128
+buildTimeDuration= 4 milli-seconds
+swapTimeDuration= 3 milli-seconds
+overalTimeDuration= 7 milli-seconds
+iterations= 2
+
+n= 125 m= 5 k= 12 p= 128
+buildTimeDuration= 5 milli-seconds
+swapTimeDuration= 9 milli-seconds
+overalTimeDuration= 14 milli-seconds
+iterations= 5
+
+n= 150 m= 5 k= 15 p= 128
+buildTimeDuration= 4 milli-seconds
+swapTimeDuration= 16 milli-seconds
+overalTimeDuration= 20 milli-seconds
+iterations= 6
+
+n= 200 m= 5 k= 20 p= 128
+buildTimeDuration= 8 milli-seconds
+swapTimeDuration= 43 milli-seconds
+overalTimeDuration= 51 milli-seconds
+iterations= 9
+
+n= 25 m= 5 k= 2 p= 64
+buildTimeDuration= 1 milli-seconds
+swapTimeDuration= 0 milli-seconds
+overalTimeDuration= 1 milli-seconds
+iterations= 0
+
+n= 50 m= 5 k= 5 p= 64
+buildTimeDuration= 1 milli-seconds
+swapTimeDuration= 1 milli-seconds
+overalTimeDuration= 2 milli-seconds
+iterations= 1
+
+n= 75 m= 5 k= 7 p= 64
+buildTimeDuration= 1 milli-seconds
+swapTimeDuration= 2 milli-seconds
+overalTimeDuration= 3 milli-seconds
+iterations= 2
+
+n= 100 m= 5 k= 10 p= 64
+buildTimeDuration= 2 milli-seconds
+swapTimeDuration= 2 milli-seconds
+overalTimeDuration= 4 milli-seconds
+iterations= 2
+
+n= 125 m= 5 k= 12 p= 64
+buildTimeDuration= 3 milli-seconds
+swapTimeDuration= 11 milli-seconds
+overalTimeDuration= 14 milli-seconds
+iterations= 5
+
+n= 150 m= 5 k= 15 p= 64
+buildTimeDuration= 3 milli-seconds
+swapTimeDuration= 19 milli-seconds
+overalTimeDuration= 22 milli-seconds
+iterations= 6
+
+n= 200 m= 5 k= 20 p= 64
+buildTimeDuration= 6 milli-seconds
+swapTimeDuration= 51 milli-seconds
+overalTimeDuration= 57 milli-seconds
+iterations= 9
+
+n= 25 m= 5 k= 2 p= 32
+buildTimeDuration= 1 milli-seconds
+swapTimeDuration= 0 milli-seconds
+overalTimeDuration= 1 milli-seconds
+iterations= 0
+
+n= 50 m= 5 k= 5 p= 32
+buildTimeDuration= 1 milli-seconds
+swapTimeDuration= 0 milli-seconds
+overalTimeDuration= 1 milli-seconds
+iterations= 1
+
+n= 75 m= 5 k= 7 p= 32
+buildTimeDuration= 1 milli-seconds
+swapTimeDuration= 2 milli-seconds
+overalTimeDuration= 3 milli-seconds
+iterations= 2
+
+n= 100 m= 5 k= 10 p= 32
+buildTimeDuration= 1 milli-seconds
+swapTimeDuration= 4 milli-seconds
+overalTimeDuration= 5 milli-seconds
+iterations= 2
+
+n= 125 m= 5 k= 12 p= 32
+buildTimeDuration= 3 milli-seconds
+swapTimeDuration= 12 milli-seconds
+overalTimeDuration= 15 milli-seconds
+iterations= 5
+
+n= 150 m= 5 k= 15 p= 32
+buildTimeDuration= 4 milli-seconds
+swapTimeDuration= 23 milli-seconds
+overalTimeDuration= 27 milli-seconds
+iterations= 6
+
+n= 200 m= 5 k= 20 p= 32
+buildTimeDuration= 6 milli-seconds
+swapTimeDuration= 66 milli-seconds
+overalTimeDuration= 72 milli-seconds
+iterations= 9
+
+n= 25 m= 5 k= 2 p= 16
+buildTimeDuration= 0 milli-seconds
+swapTimeDuration= 1 milli-seconds
+overalTimeDuration= 1 milli-seconds
+iterations= 0
+
+n= 50 m= 5 k= 5 p= 16
+buildTimeDuration= 1 milli-seconds
+swapTimeDuration= 0 milli-seconds
+overalTimeDuration= 1 milli-seconds
+iterations= 1
+
+n= 75 m= 5 k= 7 p= 16
+buildTimeDuration= 1 milli-seconds
+swapTimeDuration= 2 milli-seconds
+overalTimeDuration= 3 milli-seconds
+iterations= 2
+
+n= 100 m= 5 k= 10 p= 16
+buildTimeDuration= 2 milli-seconds
+swapTimeDuration= 5 milli-seconds
+overalTimeDuration= 7 milli-seconds
+iterations= 2
+
+n= 125 m= 5 k= 12 p= 16
+buildTimeDuration= 3 milli-seconds
+swapTimeDuration= 17 milli-seconds
+overalTimeDuration= 20 milli-seconds
+iterations= 5
+
+n= 150 m= 5 k= 15 p= 16
+buildTimeDuration= 4 milli-seconds
+swapTimeDuration= 32 milli-seconds
+overalTimeDuration= 36 milli-seconds
+iterations= 6
+
+n= 200 m= 5 k= 20 p= 16
+buildTimeDuration= 8 milli-seconds
+swapTimeDuration= 97 milli-seconds
+overalTimeDuration= 105 milli-seconds
+iterations= 9
+

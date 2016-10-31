@@ -49,11 +49,38 @@ Detailed PAM algorithm description can be found on [Algowiki project (russian on
 - Efficiency (%) = GFlops for `p` processes and `n` sized multitude / GFlops for 1 process and `n` sized multitude
 
 
-## SupercomputerCommands
+## supercomputer commands
+
+### Blue Gene
+
+```
+mpisubmit.bg -n 1 -m dual -w 02:00:00 -t PREFER_TORUS ./pam settings/bgp-1proc.txt data/experiment.txt output/output-bgp-1proc.txt
+
+mpisubmit.bg -n 256 -m dual -w 00:10:00 -t PREFER_TORUS ./pam settings/bgp-256-milli.txt data/experiment.txt output/output-bgp-256-milli.txt
+mpisubmit.bg -n 256 -m dual -w 00:10:00 -t PREFER_TORUS ./pam settings/bgp-256-small.txt data/experiment.txt output/output-bgp-256-small.txt
+mpisubmit.bg -n 256 -m dual -w 00:10:00 -t PREFER_TORUS ./pam settings/bgp-256-medium.txt data/experiment.txt output/output-bgp-256-medium.txt
+mpisubmit.bg -n 256 -m dual -w 00:10:00 -t PREFER_TORUS ./pam settings/bgp-256-big.txt data/experiment.txt output/output-bgp-256-big.txt
+
+mpisubmit.bg -n 512 -m dual -w 00:05:00 -t PREFER_TORUS ./pam settings/bgp-512-milli.txt data/experiment.txt output/output-bgp-512-milli.txt
+mpisubmit.bg -n 512 -m dual -w 00:05:00 -t PREFER_TORUS ./pam settings/bgp-512-small.txt data/experiment.txt output/output-bgp-512-small.txt
+mpisubmit.bg -n 512 -m dual -w 00:05:00 -t PREFER_TORUS ./pam settings/bgp-512-medium.txt data/experiment.txt output/output-bgp-512-medium.txt
+mpisubmit.bg -n 512 -m dual -w 00:05:00 -t PREFER_TORUS ./pam settings/bgp-512-big.txt data/experiment.txt output/output-bgp-512-big.txt
+
+mpisubmit.bg -n 1024 -m dual -w 00:02:00 -t PREFER_TORUS ./pam settings/bgp-1024-milli.txt data/experiment.txt output/output-bgp-1024-milli.txt
+mpisubmit.bg -n 1024 -m dual -w 00:02:00 -t PREFER_TORUS ./pam settings/bgp-1024-small.txt data/experiment.txt output/output-bgp-1024-small.txt
+mpisubmit.bg -n 1024 -m dual -w 00:02:00 -t PREFER_TORUS ./pam settings/bgp-1024-medium.txt data/experiment.txt output/output-bgp-1024-medium.txt
+mpisubmit.bg -n 1024 -m dual -w 00:02:00 -t PREFER_TORUS ./pam settings/bgp-1024-big.txt data/experiment.txt output/output-bgp-1024-big.txt
+
+
+mpisubmit.bg -n 16 -m dual -w 02:00:00 -t PREFER_TORUS
+mpisubmit.bg -n 64 -m dual -w 02:00:00 -t PREFER_TORUS
+mpisubmit.bg -n 128 -m dual -w 00:15:00 -t PREFER_TORUS
+mpisubmit.bg -n 512 -m dual -w 00:05:00 -t PREFER_TORUS
+```
+
+### Lomonosov
 
 Lomonosov execute tasks in context of `~/_scratch` directory.
-
-Lomonosov:
 
 ```
 sbatch -p regular4 -n 1024 impi ./pam settings/r4-set-1.txt input_data.txt output/r4-out-1.txt
@@ -83,28 +110,4 @@ sbatch -p gpu -n 64 impi ./pam ./settings/gpu-set-4.txt input_data.txt ./output/
 sbatch -p gpu -n 256 impi ./pam ./settings/gpu-set-5.txt input_data.txt ./output/gpu-out-5.txt
 sbatch -p gpu -n 8 impi ./pam ./settings/gpu-set-6.txt input_data.txt ./output/gpu-out-6.txt
 sbatch -p gpu -n 192 impi ./pam ./settings/gpu-set-7.txt input_data.txt ./output/gpu-out-7.txt
-```
-
-Blue Gene:
-
-```
-mpisubmit.bg -n 1 -m dual -w 02:00:00 -t PREFER_TORUS ./pam settings/bgp-1proc.txt data/experiment.txt output/output-bgp-1proc.txt
-
-mpisubmit.bg -n 256 -m dual -w 00:10:00 -t PREFER_TORUS ./pam settings/bgp-256-small.txt data/experiment.txt output/output-bgp-256-small.txt
-mpisubmit.bg -n 256 -m dual -w 00:10:00 -t PREFER_TORUS ./pam settings/bgp-256-medium.txt data/experiment.txt output/output-bgp-256-medium.txt
-mpisubmit.bg -n 256 -m dual -w 00:10:00 -t PREFER_TORUS ./pam settings/bgp-256-big.txt data/experiment.txt output/output-bgp-256-big.txt
-
-mpisubmit.bg -n 512 -m dual -w 00:05:00 -t PREFER_TORUS ./pam settings/bgp-512-small.txt data/experiment.txt output/output-bgp-512-small.txt
-mpisubmit.bg -n 512 -m dual -w 00:05:00 -t PREFER_TORUS ./pam settings/bgp-512-medium.txt data/experiment.txt output/output-bgp-512-medium.txt
-mpisubmit.bg -n 512 -m dual -w 00:05:00 -t PREFER_TORUS ./pam settings/bgp-512-big.txt data/experiment.txt output/output-bgp-512-big.txt
-
-mpisubmit.bg -n 1024 -m dual -w 00:02:00 -t PREFER_TORUS ./pam settings/bgp-1024-small.txt data/experiment.txt output/output-bgp-1024-small.txt
-mpisubmit.bg -n 1024 -m dual -w 00:02:00 -t PREFER_TORUS ./pam settings/bgp-1024-medium.txt data/experiment.txt output/output-bgp-1024-medium.txt
-mpisubmit.bg -n 1024 -m dual -w 00:02:00 -t PREFER_TORUS ./pam settings/bgp-1024-big.txt data/experiment.txt output/output-bgp-1024-big.txt
-
-
-mpisubmit.bg -n 16 -m dual -w 02:00:00 -t PREFER_TORUS
-mpisubmit.bg -n 64 -m dual -w 02:00:00 -t PREFER_TORUS
-mpisubmit.bg -n 128 -m dual -w 00:15:00 -t PREFER_TORUS
-mpisubmit.bg -n 512 -m dual -w 00:05:00 -t PREFER_TORUS
 ```

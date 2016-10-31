@@ -1,3 +1,45 @@
+n= 25 m= 5 k= 2 p= 1
+buildTimeDuration= 0 milli-seconds
+swapTimeDuration= 1 milli-seconds
+overalTimeDuration= 1 milli-seconds
+iterations= 0
+
+n= 50 m= 5 k= 5 p= 1
+buildTimeDuration= 2 milli-seconds
+swapTimeDuration= 4 milli-seconds
+overalTimeDuration= 6 milli-seconds
+iterations= 1
+
+n= 75 m= 5 k= 7 p= 1
+buildTimeDuration= 5 milli-seconds
+swapTimeDuration= 19 milli-seconds
+overalTimeDuration= 24 milli-seconds
+iterations= 2
+
+n= 100 m= 5 k= 10 p= 1
+buildTimeDuration= 13 milli-seconds
+swapTimeDuration= 50 milli-seconds
+overalTimeDuration= 63 milli-seconds
+iterations= 2
+
+n= 125 m= 5 k= 12 p= 1
+buildTimeDuration= 24 milli-seconds
+swapTimeDuration= 187 milli-seconds
+overalTimeDuration= 211 milli-seconds
+iterations= 5
+
+n= 150 m= 5 k= 15 p= 1
+buildTimeDuration= 44 milli-seconds
+swapTimeDuration= 394 milli-seconds
+overalTimeDuration= 438 milli-seconds
+iterations= 6
+
+n= 200 m= 5 k= 20 p= 1
+buildTimeDuration= 104 milli-seconds
+swapTimeDuration= 1330 milli-seconds
+overalTimeDuration= 1434 milli-seconds
+iterations= 9
+
 n= 250 m= 5 k= 5 p= 1
 buildTimeDuration= 39 milli-seconds
 swapTimeDuration= 269 milli-seconds
