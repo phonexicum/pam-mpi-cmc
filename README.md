@@ -1,4 +1,4 @@
-# pam-mpi-lomonosov
+# pam-mpi-cmc
 
 This repository contains **Partitioning Around Medoids (PAM)** algorithm written using MPI technology for supercomputers at Moscow State University (The faculty of Computational Mathematics and Cybernetics)
 
