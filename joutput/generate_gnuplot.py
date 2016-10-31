@@ -1,6 +1,14 @@
 #! /usr/bin/python
 
-log_files = ["output-bgp-256-small.txt", "output-bgp-256-medium.txt", "output-bgp-256-big.txt", "output-bgp-1proc.txt"]
+log_files = [
+    "output-bgp-1proc.txt",
+    "output-bgp-256-small.txt",
+    "output-bgp-256-medium.txt",
+    "output-bgp-256-big.txt",
+    "output-bgp-512-small.txt",
+    "output-bgp-512-medium.txt",
+    "output-bgp-512-big.txt"
+]
 
 data = []
 for log_file in log_files:

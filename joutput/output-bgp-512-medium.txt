@@ -1,0 +1,72 @@
+n= 2750 m= 5 k= 55 p= 512
+buildTimeDuration= 228 milli-seconds
+swapTimeDuration= 10118 milli-seconds
+overalTimeDuration= 10346 milli-seconds
+iterations= 41
+
+n= 3000 m= 5 k= 60 p= 512
+buildTimeDuration= 273 milli-seconds
+swapTimeDuration= 11700 milli-seconds
+overalTimeDuration= 11973 milli-seconds
+iterations= 38
+
+n= 3250 m= 5 k= 65 p= 512
+buildTimeDuration= 330 milli-seconds
+swapTimeDuration= 18216 milli-seconds
+overalTimeDuration= 18546 milli-seconds
+iterations= 49
+
+n= 3500 m= 5 k= 70 p= 512
+buildTimeDuration= 386 milli-seconds
+swapTimeDuration= 21171 milli-seconds
+overalTimeDuration= 21557 milli-seconds
+iterations= 47
+
+n= 3750 m= 5 k= 75 p= 512
+buildTimeDuration= 458 milli-seconds
+swapTimeDuration= 23522 milli-seconds
+overalTimeDuration= 23980 milli-seconds
+iterations= 44
+
+n= 4000 m= 5 k= 80 p= 512
+buildTimeDuration= 527 milli-seconds
+swapTimeDuration= 18554 milli-seconds
+overalTimeDuration= 19081 milli-seconds
+iterations= 29
+
+n= 2750 m= 5 k= 55 p= 384
+buildTimeDuration= 245 milli-seconds
+swapTimeDuration= 11673 milli-seconds
+overalTimeDuration= 11918 milli-seconds
+iterations= 41
+
+n= 3000 m= 5 k= 60 p= 384
+buildTimeDuration= 296 milli-seconds
+swapTimeDuration= 13577 milli-seconds
+overalTimeDuration= 13873 milli-seconds
+iterations= 38
+
+n= 3250 m= 5 k= 65 p= 384
+buildTimeDuration= 362 milli-seconds
+swapTimeDuration= 21252 milli-seconds
+overalTimeDuration= 21614 milli-seconds
+iterations= 49
+
+n= 3500 m= 5 k= 70 p= 384
+buildTimeDuration= 440 milli-seconds
+swapTimeDuration= 24851 milli-seconds
+overalTimeDuration= 25291 milli-seconds
+iterations= 47
+
+n= 3750 m= 5 k= 75 p= 384
+buildTimeDuration= 511 milli-seconds
+swapTimeDuration= 27691 milli-seconds
+overalTimeDuration= 28202 milli-seconds
+iterations= 44
+
+n= 4000 m= 5 k= 80 p= 384
+buildTimeDuration= 621 milli-seconds
+swapTimeDuration= 21969 milli-seconds
+overalTimeDuration= 22590 milli-seconds
+iterations= 29
+
