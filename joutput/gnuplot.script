@@ -1,0 +1,31 @@
+#! /usr/bin/gnuplot
+
+set style line 1 lt 1 lw 1 lc rgb '#ff0000' pt -1
+
+set terminal wxt size 1600,900 font ',14'
+set view 57,15
+
+set title 'Matrix multiplication performance' font ",26"
+set xlabel "Processes number"
+set ylabel "Matrix size"
+set zlabel "Performance (GFLOPS)" offset graph 0,0,0.7
+
+set ticslevel 0
+set grid back lt 0 linewidth 0.500, lt 0 linewidth 0.500
+
+set pm3d implicit at s
+set pm3d scansforward
+set pm3d interpolate 20,20 flush begin ftriangles noborder corners2color mean
+
+set pal maxcolors 0
+set palette defined
+
+splot "gflops.dat" title '' ls 1, "gflops.dat" title '' with lines ls 1
+
+pause mouse button3
+
+set zlabel "Performance (%)" offset graph 0,0,0.7
+
+splot "relative_performance.dat" title '' ls 1, "relative_performance.dat" title '' with lines ls 1
+
+pause mouse button3

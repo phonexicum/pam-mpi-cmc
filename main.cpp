@@ -5,12 +5,13 @@
 #include <fstream>
 #include <iostream>
 #include <cmath>
-// #include <ctime>
-#include <chrono>
+// #include <chrono>
 // #include <algorithm>
 #include <vector>
 #include <set>
 #include <utility>
+
+#include <sys/time.h>
 
 #include "pam.h"
 
@@ -21,10 +22,6 @@ using std::endl;
 using std::set;
 using std::istringstream;
 using std::vector;
-using std::pair;
-using std::make_pair;
-// using std::clock;
-// using std::clock_t;
 
 // ==================================================================================================================================================
 //                                                                                                                                          InputData
@@ -38,7 +35,6 @@ struct InputData {
     InputData(const unsigned int n, const unsigned int m, const string& fin_str);
     ~InputData();
 
-    // FUTURE WORK: Calculations of distance matrix can be parallelized
     double* GenerateDistanceMatrix() const;
 };
 
@@ -46,15 +42,21 @@ struct InputData {
 //                                                                                                                                               MAIN
 // ==================================================================================================================================================
 
-void Benchmark (const int n, const int k, const int p, const int m, const string fin_name, const string fout_name){
+void Benchmark (const int n, const int k, const int p, const int m, const int maxIt, const string fin_name, const string fout_name){
 
     MPI_Barrier (MPI_COMM_WORLD);
 
+    ProcParams procParams;
+
+    if (procParams.rank == 0){
+        cout << "Benchmark with parameters: " << n << " " << p << " " << maxIt << endl;
+    }
+
     // MPI initialization
     // 
-    ProcParams procParams;
     if (procParams.size < p) {
         cout << "Error. number of processes '" << procParams.size << "' is less then required= " << p << endl;
+        return;
     }
 
     MPI_Comm currentComm;
@@ -79,16 +81,28 @@ void Benchmark (const int n, const int k, const int p, const int m, const string
         // algorithm run
         // 
         MPI_Barrier (currentComm);
-        auto startClock = std::chrono::high_resolution_clock::now();
-        auto medianClock = std::chrono::high_resolution_clock::now();
+
+        struct timeval tp;
+        gettimeofday(&tp, NULL);
+        long int startClock = tp.tv_sec * 1000 + tp.tv_usec / 1000; // milliseconds
+        long int medianClock;
+        // auto startClock = std::chrono::high_resolution_clock::now();
+        // auto medianClock = startClock;
+
         if (procParams.rank < procParams.size){
 
             pam.BuildPhaseParallel(procParams);
-            medianClock = std::chrono::high_resolution_clock::now();
-            pam.SwapPhaseParallel(procParams, 0);
+
+            gettimeofday(&tp, NULL);
+            medianClock = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+            // medianClock = std::chrono::high_resolution_clock::now();
+            
+            pam.SwapPhaseParallel(procParams, maxIt);
 
         }
-        auto finishClock = std::chrono::high_resolution_clock::now();
+        gettimeofday(&tp, NULL);
+        long int finishClock = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+        // auto finishClock = std::chrono::high_resolution_clock::now();
         MPI_Barrier (currentComm);
 
 
@@ -101,12 +115,17 @@ void Benchmark (const int n, const int k, const int p, const int m, const string
         // algorithm results
         if (procParams.rank == 0){
 
-            fstream fout (fout_name, fstream::out | fstream::app);
+            fstream fout (fout_name.c_str(), fstream::out | fstream::app);
             fout << "n= " << n << " m= " << m << " k= " << k << " p= " << p << endl;
-            fout << "buildTimeDuration= " << std::chrono::duration_cast<std::chrono::nanoseconds>(medianClock - startClock).count() << " nano-seconds" << endl;
-            fout << "swapTimeDuration= " << std::chrono::duration_cast<std::chrono::nanoseconds>(finishClock - medianClock).count() << " nano-seconds" << endl;
-            fout << "overalTimeDuration= " << std::chrono::duration_cast<std::chrono::nanoseconds>(finishClock - startClock).count() << " nano-seconds" << endl;
-            // fout << "iterations= " << pam.getIterationsCounter() << endl;
+
+            // fout << "buildTimeDuration= " << std::chrono::duration_cast<std::chrono::nanoseconds>(medianClock - startClock).count() << " nano-seconds" << endl;
+            // fout << "swapTimeDuration= " << std::chrono::duration_cast<std::chrono::nanoseconds>(finishClock - medianClock).count() << " nano-seconds" << endl;
+            // fout << "overalTimeDuration= " << std::chrono::duration_cast<std::chrono::nanoseconds>(finishClock - startClock).count() << " nano-seconds" << endl;
+            fout << "buildTimeDuration= " << medianClock - startClock << " milli-seconds" << endl;
+            fout << "swapTimeDuration= " << finishClock - medianClock << " milli-seconds" << endl;
+            fout << "overalTimeDuration= " << finishClock - startClock << " milli-seconds" << endl;
+
+            fout << "iterations= " << pam.getIterationsCounter() << endl;
             // fout << "targetFunctionValue= " << pam.getTargetFunctionValue() << endl;
             // fout << "Medoids(points-indexes):" << endl;
 
@@ -156,18 +175,20 @@ int main(int argc, char* argv[]){
     // ================================
 
     fstream settings_fin (settings_file.c_str(), fstream::in);
-    vector<pair<int, int>> settings;
+    vector<int> matrix_size;
+    vector<int> proc_num;
+    vector<int> maxIt;
     while (settings_fin.eof() == false) {
-        int matrix, p;
-        settings_fin >> matrix >> p;
-        settings.push_back(make_pair(matrix, p));
+        int matrix, p, maxIter;
+        settings_fin >> matrix >> p >> maxIter;
+        matrix_size.push_back(matrix);
+        proc_num.push_back(p);
+        maxIt.push_back(maxIter);
     }
     settings_fin.close();
 
-    for (auto it = settings.begin(); it != settings.end(); it++){
-        for (int i = 0; i < 3; i++){
-            Benchmark (it->first, it->first / 50, it->second, 5, input_file, output_file);
-        }
+    for (unsigned int i = 0; i < matrix_size.size(); i++){
+        Benchmark (matrix_size[i], matrix_size[i] / 50, proc_num[i], 5, maxIt[i], input_file, output_file);
     }
 
     MPI_Barrier (MPI_COMM_WORLD);

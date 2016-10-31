@@ -30,11 +30,9 @@ class PAM {
 
         public:
 
-    // PAM will take ownership on distanceMatrix_ and delete it in its destructor
     PAM(const unsigned int n_, const unsigned int k_, const double* distanceMatrix_);
     ~PAM();
 
-    // FUTURE WORK: BuildPhase calculation can be parallelized
     void BuildPhaseConsecutive ();
     void BuildPhaseParallel (const ProcParams& procParams);
 
@@ -54,6 +52,8 @@ class PAM {
     unsigned int getIterationsCounter()      { return iterationsCounter; }
 
         private:
+
+    static const bool debug = false;
 
     const unsigned int n; // Multitude power
     const unsigned int k; // Clusters number

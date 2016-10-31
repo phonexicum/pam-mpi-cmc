@@ -2,7 +2,6 @@
 #include <fstream>
 #include <cmath>
 #include <iomanip>
-#include <chrono>
 #include <iostream>
 
 #include <unistd.h>
@@ -10,6 +9,7 @@
 using std::fstream;
 using std::endl;
 using std::cout;
+using std::ceil;
 
 #include "pam.h"
 
@@ -54,7 +54,7 @@ void PAM::BuildPhaseConsecutive (){
             set<unsigned int>::iterator bestNonMedoid;
 
             bool firstAttempt = true;
-            for (auto it = nonMedoidsIndexes.begin(); it != nonMedoidsIndexes.end(); it++){
+            for (set<unsigned int>::iterator it = nonMedoidsIndexes.begin(); it != nonMedoidsIndexes.end(); it++){
                 double sum = 0;
                 
                 for (unsigned int j = 0; j < n; j++){
@@ -82,7 +82,7 @@ void PAM::BuildPhaseConsecutive (){
             set<unsigned int>::iterator bestNonMedoid;
 
             bool firstAttempt = true;
-            for (auto it = nonMedoidsIndexes.begin(); it != nonMedoidsIndexes.end(); it++) {
+            for (set<unsigned int>::iterator it = nonMedoidsIndexes.begin(); it != nonMedoidsIndexes.end(); it++) {
 
                 // Counting sum of mins
                 double sum = 0;
@@ -121,12 +121,8 @@ void PAM::BuildPhaseConsecutive (){
 // ==================================================================================================================================================
 void PAM::BuildPhaseParallel (const ProcParams& procParams){
 
-    bool debug = false;
-
     if (not CheckParametersCorrectness())
         return;
-
-    // computation of task's positions for current process from calculation graph
 
     MPIMessageBUILD localObjFnMin;
     double* previousMIN = new double [n];
@@ -134,13 +130,13 @@ void PAM::BuildPhaseParallel (const ProcParams& procParams){
     for (unsigned int buildIterationsCounter = 0; buildIterationsCounter < k; buildIterationsCounter++) {
 
         unsigned int tasksNum = nonMedoidsIndexes.size();
-        unsigned int tasksPerProcess = std::ceil(static_cast<double>(tasksNum) / procParams.size);
+        unsigned int tasksPerProcess = static_cast<unsigned int>( ceil(static_cast<double>(tasksNum) / static_cast<double>(procParams.size)));
         unsigned int absolutePosition = procParams.rank * tasksPerProcess;
 
         if (absolutePosition < tasksNum) {
 
             set<unsigned int>::iterator bestNonMedoid = nonMedoidsIndexes.end();
-            auto it = nonMedoidsIndexes.begin();
+            set<unsigned int>::iterator it = nonMedoidsIndexes.begin();
             for (unsigned int i = 0; i < absolutePosition; i++)
                 it++;
             bool firstAttempt = true;
@@ -172,12 +168,12 @@ void PAM::BuildPhaseParallel (const ProcParams& procParams){
 
                 // Send minSum
                 int ret = MPI_Ssend(
-                    &localObjFnMin,                         // void* buffer
-                    sizeof(MPIMessageBUILD),                // int count
-                    MPI_BYTE,                               // MPI_Datatype datatype
-                    0,                                      // int dest
-                    MPIMessageTypes::BUILD_AgregationStep,  // int tag
-                    procParams.comm                         // MPI_Comm comm
+                    &localObjFnMin,             // void* buffer
+                    sizeof(MPIMessageBUILD),    // int count
+                    MPI_BYTE,                   // MPI_Datatype datatype
+                    0,                          // int dest
+                    PAM::BUILD_AgregationStep,  // int tag
+                    procParams.comm             // MPI_Comm comm
                 );
 
                 if (ret != MPI_SUCCESS){
@@ -186,7 +182,7 @@ void PAM::BuildPhaseParallel (const ProcParams& procParams){
 
             } else {
                 // I do not care about order of incoming messages from other processes, but I know how many there is messages to be received
-                for (unsigned int i = 1; i < std::ceil(static_cast<double>(tasksNum) / tasksPerProcess); i++){
+                for (unsigned int i = 1; i < static_cast<unsigned int> (ceil(static_cast<double>(tasksNum) / static_cast<double>(tasksPerProcess))); i++){
 
                     MPI_Status status;
                     MPIMessageBUILD incomingObjFnMin;
@@ -196,7 +192,7 @@ void PAM::BuildPhaseParallel (const ProcParams& procParams){
                         sizeof(MPIMessageBUILD),                // int count
                         MPI_BYTE,                               // MPI_Datatype datatype
                         MPI_ANY_SOURCE,                         // int source
-                        MPIMessageTypes::BUILD_AgregationStep,  // int tag
+                        PAM::BUILD_AgregationStep,              // int tag
                         procParams.comm,                        // MPI_Comm comm
                         &status                                 // MPI_Status *status
                     );
@@ -257,8 +253,6 @@ void PAM::BuildPhaseParallel (const ProcParams& procParams){
 // ==================================================================================================================================================
 void PAM::SwapPhaseParallel (const ProcParams& procParams, const unsigned int itMax){
 
-    bool debug = false;
-
     if (debug){
         sleep(1);
         fstream("output.txt", fstream::out | fstream::app) << "SwapPhase" << endl;
@@ -270,7 +264,7 @@ void PAM::SwapPhaseParallel (const ProcParams& procParams, const unsigned int it
     // computation of task's positions for current process from calculation graph
     
     unsigned int tasksNum = k*(n-k);
-    unsigned int tasksPerProcess = std::ceil(static_cast<double>(tasksNum) / procParams.size);
+    unsigned int tasksPerProcess = static_cast<unsigned int>(ceil(static_cast<double>(tasksNum) / procParams.size));
     unsigned int absolutePosition = procParams.rank * tasksPerProcess;
     unsigned int task_m_s = absolutePosition / (n-k);
     unsigned int task_o_h = absolutePosition % (n-k);
@@ -291,11 +285,11 @@ void PAM::SwapPhaseParallel (const ProcParams& procParams, const unsigned int it
         MPIMessageSWAP localObjFnMin;
 
         bool firstTimeCalculation = true;
-        auto m_s = medoidsIndexes.begin();
+        set<unsigned int>::iterator m_s = medoidsIndexes.begin();
         for (unsigned int i = 0; i < task_m_s; i++)
             m_s++;
         bool m_s_changed = true;
-        auto o_h = nonMedoidsIndexes.begin();
+        set<unsigned int>::iterator o_h = nonMedoidsIndexes.begin();
         for (unsigned int i = 0; i < task_o_h; i++)
             o_h++;
 
@@ -306,7 +300,7 @@ void PAM::SwapPhaseParallel (const ProcParams& procParams, const unsigned int it
                 // Computing independent from summ and from o_h changing minimum
                 //      (computing min_m_s)
                 for (unsigned int i = 0; i < n; i++){
-                    auto it = medoidsIndexes.begin();
+                    set<unsigned int>::iterator it = medoidsIndexes.begin();
                     if (*it == *m_s) it++;
                     min_m_s[i] = distanceMatrix[(*it)*n + i]; it++;
                     for (; it != medoidsIndexes.end(); it++){
@@ -356,7 +350,7 @@ void PAM::SwapPhaseParallel (const ProcParams& procParams, const unsigned int it
                 sizeof(MPIMessageSWAP),                     // int count
                 MPI_BYTE,                                   // MPI_Datatype datatype
                 procParams.rank % agregate_proc_amount,     // int dest
-                MPIMessageTypes::SWAP_FirstStepAgregation,  // int tag
+                PAM::SWAP_FirstStepAgregation,              // int tag
                 procParams.comm                             // MPI_Comm comm
             );
 
@@ -379,7 +373,7 @@ void PAM::SwapPhaseParallel (const ProcParams& procParams, const unsigned int it
                     sizeof(MPIMessageSWAP),                     // int count
                     MPI_BYTE,                                   // MPI_Datatype datatype
                     MPI_ANY_SOURCE,                             // int source
-                    MPIMessageTypes::SWAP_FirstStepAgregation,  // int tag
+                    PAM::SWAP_FirstStepAgregation,              // int tag
                     procParams.comm,                            // MPI_Comm comm
                     &status                                     // MPI_Status *status
                 );
@@ -405,10 +399,10 @@ void PAM::SwapPhaseParallel (const ProcParams& procParams, const unsigned int it
                 // Send minSum
                 int ret = MPI_Ssend(
                     &localObjFnMin,                         // void* buffer
-                    sizeof(MPIMessageSWAP),                     // int count
+                    sizeof(MPIMessageSWAP),                 // int count
                     MPI_BYTE,                               // MPI_Datatype datatype
                     0,                                      // int dest
-                    MPIMessageTypes::SWAP_SecondStepAgregation,  // int tag
+                    PAM::SWAP_SecondStepAgregation,         // int tag
                     procParams.comm                         // MPI_Comm comm
                 );
 
@@ -425,10 +419,10 @@ void PAM::SwapPhaseParallel (const ProcParams& procParams, const unsigned int it
                     // I do not care about order of incoming messages from other processes, but I know how many there is messages to be received
                     int ret = MPI_Recv(
                         &incomingObjFnMin,                      // void *buf
-                        sizeof(MPIMessageSWAP),                     // int count
+                        sizeof(MPIMessageSWAP),                 // int count
                         MPI_BYTE,                               // MPI_Datatype datatype
                         MPI_ANY_SOURCE,                         // int source
-                        MPIMessageTypes::SWAP_SecondStepAgregation,  // int tag
+                        PAM::SWAP_SecondStepAgregation,         // int tag
                         procParams.comm,                        // MPI_Comm comm
                         &status                                 // MPI_Status *status
                     );
@@ -449,11 +443,11 @@ void PAM::SwapPhaseParallel (const ProcParams& procParams, const unsigned int it
 
         // Broadcasting localObjFnMin from process of rank = 0
         MPI_Bcast(
-            &localObjFnMin,     // void* buffer
+            &localObjFnMin,         // void* buffer
             sizeof(MPIMessageSWAP), // int count
-            MPI_BYTE,           // MPI_Datatype datatype
-            0,                  // int root
-            procParams.comm     // MPI_Comm comm
+            MPI_BYTE,               // MPI_Datatype datatype
+            0,                      // int root
+            procParams.comm         // MPI_Comm comm
         );
 
         if (targetFunctionValue <= localObjFnMin.objFn){
@@ -478,7 +472,7 @@ void PAM::SwapPhaseParallel (const ProcParams& procParams, const unsigned int it
         // fstream("working.txt", fstream::out | fstream::app) << "0";
 
         iterationsCounter ++;
-        if (itMax != 0 && iterationsCounter < itMax ){
+        if (itMax != 0 && iterationsCounter > itMax ){
             break;
         }
     }
@@ -491,7 +485,7 @@ void PAM::SwapPhaseParallel (const ProcParams& procParams, const unsigned int it
 // ==================================================================================================================================================
 void PAM::Dump (const string& fout_str) const{
     
-    fstream fout(fout_str, fstream::out | fstream::app);
+    fstream fout(fout_str.c_str(), fstream::out | fstream::app);
     fout << "========== Dump begin ==========" << endl;
 
     fout << "n= " << n << endl;
@@ -500,13 +494,13 @@ void PAM::Dump (const string& fout_str) const{
     fout << "targetFunctionValue= " << targetFunctionValue << endl;
 
     fout << "medoidsIndexes:" << endl;
-    for (auto it = medoidsIndexes.begin(); it != medoidsIndexes.end(); it++){
+    for (set<unsigned int>::iterator it = medoidsIndexes.begin(); it != medoidsIndexes.end(); it++){
         fout << *it << " ";
     }
     fout << endl;
 
     fout << "nonMedoidsIndexes:" << endl;
-    for (auto it = nonMedoidsIndexes.begin(); it != nonMedoidsIndexes.end(); it++){
+    for (set<unsigned int>::iterator it = nonMedoidsIndexes.begin(); it != nonMedoidsIndexes.end(); it++){
         fout << *it << " ";
     }
     fout << endl;
