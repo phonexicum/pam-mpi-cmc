@@ -1,0 +1,12 @@
+n= 4250 m= 5 k= 85 p= 1024
+buildTimeDuration= 538 milli-seconds
+swapTimeDuration= 28913 milli-seconds
+overalTimeDuration= 29451 milli-seconds
+iterations= 55
+
+n= 4500 m= 5 k= 90 p= 1024
+buildTimeDuration= 609 milli-seconds
+swapTimeDuration= 37499 milli-seconds
+overalTimeDuration= 38108 milli-seconds
+iterations= 62
+

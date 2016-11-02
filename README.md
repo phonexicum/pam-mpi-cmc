@@ -8,6 +8,7 @@ Considered supercomputers:
 - Blue Gene/P (g++ -std=gnu++98)
 - Regatta
 
+In realization synchronized MPI Send/Recv are used.
 
 ## Repository structure
 
