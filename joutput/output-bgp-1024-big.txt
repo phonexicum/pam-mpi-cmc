@@ -10,3 +10,87 @@ swapTimeDuration= 37499 milli-seconds
 overalTimeDuration= 38108 milli-seconds
 iterations= 62
 
+n= 4750 m= 5 k= 95 p= 1024
+buildTimeDuration= 671 milli-seconds
+swapTimeDuration= 51973 milli-seconds
+overalTimeDuration= 52644 milli-seconds
+iterations= 76
+
+n= 5000 m= 5 k= 100 p= 1024
+buildTimeDuration= 750 milli-seconds
+swapTimeDuration= 4609 milli-seconds
+overalTimeDuration= 5359 milli-seconds
+iterations= 6
+
+n= 4250 m= 5 k= 85 p= 896
+buildTimeDuration= 537 milli-seconds
+swapTimeDuration= 3280 milli-seconds
+overalTimeDuration= 3817 milli-seconds
+iterations= 6
+
+n= 4500 m= 5 k= 90 p= 896
+buildTimeDuration= 599 milli-seconds
+swapTimeDuration= 3785 milli-seconds
+overalTimeDuration= 4384 milli-seconds
+iterations= 6
+
+n= 4750 m= 5 k= 95 p= 896
+buildTimeDuration= 679 milli-seconds
+swapTimeDuration= 4295 milli-seconds
+overalTimeDuration= 4974 milli-seconds
+iterations= 6
+
+n= 5000 m= 5 k= 100 p= 896
+buildTimeDuration= 758 milli-seconds
+swapTimeDuration= 8973 milli-seconds
+overalTimeDuration= 9731 milli-seconds
+iterations= 11
+
+n= 4250 m= 5 k= 85 p= 768
+buildTimeDuration= 544 milli-seconds
+swapTimeDuration= 6430 milli-seconds
+overalTimeDuration= 6974 milli-seconds
+iterations= 11
+
+n= 4500 m= 5 k= 90 p= 768
+buildTimeDuration= 606 milli-seconds
+swapTimeDuration= 7446 milli-seconds
+overalTimeDuration= 8052 milli-seconds
+iterations= 11
+
+n= 4750 m= 5 k= 95 p= 768
+buildTimeDuration= 705 milli-seconds
+swapTimeDuration= 8467 milli-seconds
+overalTimeDuration= 9172 milli-seconds
+iterations= 11
+
+n= 5000 m= 5 k= 100 p= 768
+buildTimeDuration= 788 milli-seconds
+swapTimeDuration= 9677 milli-seconds
+overalTimeDuration= 10465 milli-seconds
+iterations= 11
+
+n= 4250 m= 5 k= 85 p= 640
+buildTimeDuration= 564 milli-seconds
+swapTimeDuration= 7030 milli-seconds
+overalTimeDuration= 7594 milli-seconds
+iterations= 11
+
+n= 4500 m= 5 k= 90 p= 640
+buildTimeDuration= 642 milli-seconds
+swapTimeDuration= 8165 milli-seconds
+overalTimeDuration= 8807 milli-seconds
+iterations= 11
+
+n= 4750 m= 5 k= 95 p= 640
+buildTimeDuration= 736 milli-seconds
+swapTimeDuration= 9296 milli-seconds
+overalTimeDuration= 10032 milli-seconds
+iterations= 11
+
+n= 5000 m= 5 k= 100 p= 640
+buildTimeDuration= 824 milli-seconds
+swapTimeDuration= 10651 milli-seconds
+overalTimeDuration= 11475 milli-seconds
+iterations= 11
+

@@ -10,6 +10,10 @@ log_files = [
     "output-bgp-512-small.txt",
     "output-bgp-512-medium.txt",
     "output-bgp-512-big.txt",
+    # "output-bgp-1024-milli.txt",
+    # "output-bgp-1024-small.txt",
+    # "output-bgp-1024-medium.txt",
+    # "output-bgp-1024-big.txt",
 ]
 
 data = []
@@ -96,6 +100,6 @@ with open("relative_performance.dat", "w") as gnuplot_file:
         etalon = find_arr(data, lambda x: x["p"] == 1 and x["n"] == value["n"])
         if etalon >= 0:
 
-            attitude = countGFlops(value) / countGFlops(data[etalon])
+            attitude = countGFlops(value) / (countGFlops(data[etalon]) * value["p"])
 
-            gnuplot_file.write(str(value["p"]) + " " + str(value["n"]) + " " + str(GFlops) + "\n")
+            gnuplot_file.write(str(value["p"]) + " " + str(value["n"]) + " " + str(attitude) + "\n")

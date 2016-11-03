@@ -10,6 +10,8 @@ Considered supercomputers:
 
 In realization synchronized MPI Send/Recv are used.
 
+OpenMP not used (but it could have been used).
+
 ## Repository structure
 
 - `./main.cpp` - C++ file containing benchmark for PAM algorithm
@@ -18,7 +20,7 @@ In realization synchronized MPI Send/Recv are used.
 - `./data/` - contains data to be processed clusterized
 - `./joutput/` - contains results of PAM benchmark on *Blue Gene/P* supercomputer
 
-    - `./generate_gnuplot.py` - generates `./*.dat` files for plotting them
+    - `./generate_gnuplot.py` - generates `./*.dat` files for their plotting
     - `./gnuplot.script` - gnuplot script which generates plots representing *matrix multiplication performance*
 
 - `./mpisubmit.sh` - script for starting tasks on Regatta supercomputer. This perl script was taken from BlueGene and adapted to Regatta.
@@ -57,24 +59,27 @@ Detailed PAM algorithm description can be found on [Algowiki project (russian on
 ```
 mpisubmit.bg -n 1 -m dual -w 02:00:00 -t PREFER_TORUS ./pam settings/bgp-1proc.txt data/experiment.txt output/output-bgp-1proc.txt
 
-mpisubmit.bg -n 256 -m dual -w 00:10:00 -t PREFER_TORUS ./pam settings/bgp-256-milli.txt data/experiment.txt output/output-bgp-256-milli.txt
-mpisubmit.bg -n 256 -m dual -w 00:10:00 -t PREFER_TORUS ./pam settings/bgp-256-small.txt data/experiment.txt output/output-bgp-256-small.txt
-mpisubmit.bg -n 256 -m dual -w 00:10:00 -t PREFER_TORUS ./pam settings/bgp-256-medium.txt data/experiment.txt output/output-bgp-256-medium.txt
-mpisubmit.bg -n 256 -m dual -w 00:10:00 -t PREFER_TORUS ./pam settings/bgp-256-big.txt data/experiment.txt output/output-bgp-256-big.txt
+mpisubmit.bg -n 128 -m dual -w 00:15:00 -t PREFER_TORUS ./pam settings/bgp-256-milli.txt data/experiment.txt output/output-bgp-256-milli.txt
+mpisubmit.bg -n 128 -m dual -w 00:15:00 -t PREFER_TORUS ./pam settings/bgp-256-small.txt data/experiment.txt output/output-bgp-256-small.txt
+mpisubmit.bg -n 128 -m dual -w 00:15:00 -t PREFER_TORUS ./pam settings/bgp-256-medium.txt data/experiment.txt output/output-bgp-256-medium.txt
+mpisubmit.bg -n 128 -m dual -w 00:15:00 -t PREFER_TORUS ./pam settings/bgp-256-big.txt data/experiment.txt output/output-bgp-256-big.txt
 
-mpisubmit.bg -n 512 -m dual -w 00:05:00 -t PREFER_TORUS ./pam settings/bgp-512-milli.txt data/experiment.txt output/output-bgp-512-milli.txt
-mpisubmit.bg -n 512 -m dual -w 00:05:00 -t PREFER_TORUS ./pam settings/bgp-512-small.txt data/experiment.txt output/output-bgp-512-small.txt
-mpisubmit.bg -n 512 -m dual -w 00:05:00 -t PREFER_TORUS ./pam settings/bgp-512-medium.txt data/experiment.txt output/output-bgp-512-medium.txt
-mpisubmit.bg -n 512 -m dual -w 00:05:00 -t PREFER_TORUS ./pam settings/bgp-512-big.txt data/experiment.txt output/output-bgp-512-big.txt
+mpisubmit.bg -n 256 -m dual -w 00:10:00 -t PREFER_TORUS ./pam settings/bgp-512-milli.txt data/experiment.txt output/output-bgp-512-milli.txt
+mpisubmit.bg -n 256 -m dual -w 00:10:00 -t PREFER_TORUS ./pam settings/bgp-512-small.txt data/experiment.txt output/output-bgp-512-small.txt
+mpisubmit.bg -n 256 -m dual -w 00:10:00 -t PREFER_TORUS ./pam settings/bgp-512-medium.txt data/experiment.txt output/output-bgp-512-medium.txt
+mpisubmit.bg -n 256 -m dual -w 00:10:00 -t PREFER_TORUS ./pam settings/bgp-512-big.txt data/experiment.txt output/output-bgp-512-big.txt
 
-mpisubmit.bg -n 1024 -m dual -w 00:02:00 -t PREFER_TORUS ./pam settings/bgp-1024-milli.txt data/experiment.txt output/output-bgp-1024-milli.txt
+mpisubmit.bg -n 512 -m dual -w 00:05:00 -t PREFER_TORUS ./pam settings/bgp-1024-milli.txt data/experiment.txt output/output-bgp-1024-milli.txt
 mpisubmit.bg -n 1024 -m dual -w 00:02:00 -t PREFER_TORUS ./pam settings/bgp-1024-small.txt data/experiment.txt output/output-bgp-1024-small.txt
-mpisubmit.bg -n 1024 -m dual -w 00:02:00 -t PREFER_TORUS ./pam settings/bgp-1024-medium.txt data/experiment.txt output/output-bgp-1024-medium.txt
+mpisubmit.bg -n 512 -m dual -w 00:05:00 -t PREFER_TORUS ./pam settings/bgp-1024-medium.txt data/experiment.txt output/output-bgp-1024-medium.txt
 mpisubmit.bg -n 1024 -m dual -w 00:02:00 -t PREFER_TORUS ./pam settings/bgp-1024-big.txt data/experiment.txt output/output-bgp-1024-big.txt
+
+mpisubmit.bg -n 256 -m VN -w 00:10:00 -t PREFER_TORUS ./pam settings/bgp-1024-big.txt data/experiment.txt output/output-bgp-1024-big.txt
 
 
 mpisubmit.bg -n 16 -m dual -w 02:00:00 -t PREFER_TORUS
 mpisubmit.bg -n 64 -m dual -w 02:00:00 -t PREFER_TORUS
+mpisubmit.bg -n 256 -m dual -w 00:10:00 -t PREFER_TORUS
 mpisubmit.bg -n 128 -m dual -w 00:15:00 -t PREFER_TORUS
 mpisubmit.bg -n 512 -m dual -w 00:05:00 -t PREFER_TORUS
 ```

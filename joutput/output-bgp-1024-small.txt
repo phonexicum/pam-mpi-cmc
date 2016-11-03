@@ -5,21 +5,21 @@ overalTimeDuration= 11 milli-seconds
 iterations= 5
 
 n= 500 m= 5 k= 10 p= 1024
-buildTimeDuration= 19 milli-seconds
-swapTimeDuration= 30 milli-seconds
+buildTimeDuration= 18 milli-seconds
+swapTimeDuration= 31 milli-seconds
 overalTimeDuration= 49 milli-seconds
 iterations= 10
 
 n= 750 m= 5 k= 15 p= 1024
 buildTimeDuration= 41 milli-seconds
-swapTimeDuration= 163 milli-seconds
-overalTimeDuration= 204 milli-seconds
+swapTimeDuration= 162 milli-seconds
+overalTimeDuration= 203 milli-seconds
 iterations= 14
 
 n= 1000 m= 5 k= 20 p= 1024
 buildTimeDuration= 74 milli-seconds
-swapTimeDuration= 231 milli-seconds
-overalTimeDuration= 305 milli-seconds
+swapTimeDuration= 230 milli-seconds
+overalTimeDuration= 304 milli-seconds
 iterations= 19
 
 n= 1250 m= 5 k= 25 p= 1024
@@ -29,26 +29,26 @@ overalTimeDuration= 547 milli-seconds
 iterations= 14
 
 n= 1500 m= 5 k= 30 p= 1024
-buildTimeDuration= 95 milli-seconds
+buildTimeDuration= 94 milli-seconds
 swapTimeDuration= 1487 milli-seconds
-overalTimeDuration= 1582 milli-seconds
+overalTimeDuration= 1581 milli-seconds
 iterations= 30
 
 n= 1750 m= 5 k= 35 p= 1024
-buildTimeDuration= 129 milli-seconds
-swapTimeDuration= 1272 milli-seconds
+buildTimeDuration= 128 milli-seconds
+swapTimeDuration= 1273 milli-seconds
 overalTimeDuration= 1401 milli-seconds
 iterations= 18
 
 n= 2000 m= 5 k= 40 p= 1024
-buildTimeDuration= 168 milli-seconds
-swapTimeDuration= 2713 milli-seconds
-overalTimeDuration= 2881 milli-seconds
+buildTimeDuration= 167 milli-seconds
+swapTimeDuration= 2717 milli-seconds
+overalTimeDuration= 2884 milli-seconds
 iterations= 29
 
 n= 2250 m= 5 k= 45 p= 1024
-buildTimeDuration= 170 milli-seconds
-swapTimeDuration= 4469 milli-seconds
+buildTimeDuration= 169 milli-seconds
+swapTimeDuration= 4470 milli-seconds
 overalTimeDuration= 4639 milli-seconds
 iterations= 37
 
@@ -60,14 +60,14 @@ iterations= 32
 
 n= 250 m= 5 k= 5 p= 896
 buildTimeDuration= 5 milli-seconds
-swapTimeDuration= 7 milli-seconds
-overalTimeDuration= 12 milli-seconds
+swapTimeDuration= 6 milli-seconds
+overalTimeDuration= 11 milli-seconds
 iterations= 5
 
 n= 500 m= 5 k= 10 p= 896
-buildTimeDuration= 18 milli-seconds
+buildTimeDuration= 19 milli-seconds
 swapTimeDuration= 52 milli-seconds
-overalTimeDuration= 70 milli-seconds
+overalTimeDuration= 71 milli-seconds
 iterations= 10
 
 n= 750 m= 5 k= 15 p= 896
@@ -77,14 +77,14 @@ overalTimeDuration= 207 milli-seconds
 iterations= 14
 
 n= 1000 m= 5 k= 20 p= 896
-buildTimeDuration= 41 milli-seconds
-swapTimeDuration= 407 milli-seconds
+buildTimeDuration= 42 milli-seconds
+swapTimeDuration= 406 milli-seconds
 overalTimeDuration= 448 milli-seconds
 iterations= 19
 
 n= 1250 m= 5 k= 25 p= 896
-buildTimeDuration= 66 milli-seconds
-swapTimeDuration= 294 milli-seconds
+buildTimeDuration= 65 milli-seconds
+swapTimeDuration= 295 milli-seconds
 overalTimeDuration= 360 milli-seconds
 iterations= 14
 
@@ -95,14 +95,14 @@ overalTimeDuration= 1618 milli-seconds
 iterations= 30
 
 n= 1750 m= 5 k= 35 p= 896
-buildTimeDuration= 128 milli-seconds
+buildTimeDuration= 129 milli-seconds
 swapTimeDuration= 1309 milli-seconds
-overalTimeDuration= 1437 milli-seconds
+overalTimeDuration= 1438 milli-seconds
 iterations= 18
 
 n= 2000 m= 5 k= 40 p= 896
-buildTimeDuration= 133 milli-seconds
-swapTimeDuration= 2808 milli-seconds
+buildTimeDuration= 134 milli-seconds
+swapTimeDuration= 2807 milli-seconds
 overalTimeDuration= 2941 milli-seconds
 iterations= 29
 
@@ -114,26 +114,26 @@ iterations= 37
 
 n= 2500 m= 5 k= 50 p= 896
 buildTimeDuration= 209 milli-seconds
-swapTimeDuration= 5148 milli-seconds
-overalTimeDuration= 5357 milli-seconds
+swapTimeDuration= 5150 milli-seconds
+overalTimeDuration= 5359 milli-seconds
 iterations= 32
 
 n= 250 m= 5 k= 5 p= 768
-buildTimeDuration= 4 milli-seconds
+buildTimeDuration= 5 milli-seconds
 swapTimeDuration= 7 milli-seconds
-overalTimeDuration= 11 milli-seconds
+overalTimeDuration= 12 milli-seconds
 iterations= 5
 
 n= 500 m= 5 k= 10 p= 768
 buildTimeDuration= 18 milli-seconds
-swapTimeDuration= 31 milli-seconds
-overalTimeDuration= 49 milli-seconds
+swapTimeDuration= 32 milli-seconds
+overalTimeDuration= 50 milli-seconds
 iterations= 10
 
 n= 750 m= 5 k= 15 p= 768
-buildTimeDuration= 41 milli-seconds
+buildTimeDuration= 42 milli-seconds
 swapTimeDuration= 98 milli-seconds
-overalTimeDuration= 139 milli-seconds
+overalTimeDuration= 140 milli-seconds
 iterations= 14
 
 n= 1000 m= 5 k= 20 p= 768
@@ -144,14 +144,14 @@ iterations= 19
 
 n= 1250 m= 5 k= 25 p= 768
 buildTimeDuration= 66 milli-seconds
-swapTimeDuration= 508 milli-seconds
-overalTimeDuration= 574 milli-seconds
+swapTimeDuration= 507 milli-seconds
+overalTimeDuration= 573 milli-seconds
 iterations= 14
 
 n= 1500 m= 5 k= 30 p= 768
 buildTimeDuration= 95 milli-seconds
-swapTimeDuration= 1575 milli-seconds
-overalTimeDuration= 1670 milli-seconds
+swapTimeDuration= 1574 milli-seconds
+overalTimeDuration= 1669 milli-seconds
 iterations= 30
 
 n= 1750 m= 5 k= 35 p= 768
@@ -162,38 +162,38 @@ iterations= 18
 
 n= 2000 m= 5 k= 40 p= 768
 buildTimeDuration= 134 milli-seconds
-swapTimeDuration= 2928 milli-seconds
-overalTimeDuration= 3062 milli-seconds
+swapTimeDuration= 2929 milli-seconds
+overalTimeDuration= 3063 milli-seconds
 iterations= 29
 
 n= 2250 m= 5 k= 45 p= 768
-buildTimeDuration= 170 milli-seconds
+buildTimeDuration= 169 milli-seconds
 swapTimeDuration= 4863 milli-seconds
-overalTimeDuration= 5033 milli-seconds
+overalTimeDuration= 5032 milli-seconds
 iterations= 37
 
 n= 2500 m= 5 k= 50 p= 768
 buildTimeDuration= 188 milli-seconds
-swapTimeDuration= 5413 milli-seconds
-overalTimeDuration= 5601 milli-seconds
+swapTimeDuration= 5410 milli-seconds
+overalTimeDuration= 5598 milli-seconds
 iterations= 32
 
 n= 250 m= 5 k= 5 p= 640
-buildTimeDuration= 5 milli-seconds
+buildTimeDuration= 4 milli-seconds
 swapTimeDuration= 7 milli-seconds
-overalTimeDuration= 12 milli-seconds
+overalTimeDuration= 11 milli-seconds
 iterations= 5
 
 n= 500 m= 5 k= 10 p= 640
-buildTimeDuration= 18 milli-seconds
-swapTimeDuration= 54 milli-seconds
+buildTimeDuration= 19 milli-seconds
+swapTimeDuration= 53 milli-seconds
 overalTimeDuration= 72 milli-seconds
 iterations= 10
 
 n= 750 m= 5 k= 15 p= 640
-buildTimeDuration= 24 milli-seconds
+buildTimeDuration= 23 milli-seconds
 swapTimeDuration= 173 milli-seconds
-overalTimeDuration= 197 milli-seconds
+overalTimeDuration= 196 milli-seconds
 iterations= 14
 
 n= 1000 m= 5 k= 20 p= 640
@@ -203,9 +203,9 @@ overalTimeDuration= 473 milli-seconds
 iterations= 19
 
 n= 1250 m= 5 k= 25 p= 640
-buildTimeDuration= 65 milli-seconds
+buildTimeDuration= 66 milli-seconds
 swapTimeDuration= 528 milli-seconds
-overalTimeDuration= 593 milli-seconds
+overalTimeDuration= 594 milli-seconds
 iterations= 14
 
 n= 1500 m= 5 k= 30 p= 640
@@ -222,25 +222,19 @@ iterations= 18
 
 n= 2000 m= 5 k= 40 p= 640
 buildTimeDuration= 121 milli-seconds
-swapTimeDuration= 3098 milli-seconds
-overalTimeDuration= 3219 milli-seconds
+swapTimeDuration= 3099 milli-seconds
+overalTimeDuration= 3220 milli-seconds
 iterations= 29
 
 n= 2250 m= 5 k= 45 p= 640
-buildTimeDuration= 153 milli-seconds
-swapTimeDuration= 5173 milli-seconds
-overalTimeDuration= 5326 milli-seconds
+buildTimeDuration= 154 milli-seconds
+swapTimeDuration= 5171 milli-seconds
+overalTimeDuration= 5325 milli-seconds
 iterations= 37
 
 n= 2500 m= 5 k= 50 p= 640
-buildTimeDuration= 189 milli-seconds
-swapTimeDuration= 5778 milli-seconds
-overalTimeDuration= 5967 milli-seconds
-iterations= 32
-
-n= 2500 m= 5 k= 50 p= 640
 buildTimeDuration= 188 milli-seconds
-swapTimeDuration= 5783 milli-seconds
-overalTimeDuration= 5971 milli-seconds
+swapTimeDuration= 5779 milli-seconds
+overalTimeDuration= 5967 milli-seconds
 iterations= 32
 
