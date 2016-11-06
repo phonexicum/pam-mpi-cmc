@@ -2,8 +2,8 @@
 
 set style line 1 lt 1 lw 1 lc rgb '#ff0000' pt -1
 
-set terminal wxt size 1000,600 font ',14'
-#set terminal wxt size 1600,900 font ',14'
+#set terminal wxt size 1000,600 font ',14'
+set terminal wxt size 1600,900 font ',14'
 set view 60,5
 
 set title 'Matrix multiplication performance' font ",26"
@@ -18,12 +18,16 @@ set pm3d implicit at s
 set pm3d scansforward
 set pm3d interpolate 10,10 flush begin ftriangles noborder corners2color mean
 
+#set hidden3d back offset 1 trianglepattern 3 undefined 1 altdiagonal bentover
+
 set pal maxcolors 0
 set palette defined
 
 splot "gflops.dat" title '' ls 1, "gflops.dat" title '' with lines ls 1
 
 pause mouse button3
+
+set view 60,30
 
 set zlabel "Performance (%)" offset graph 0,0,0.7
 
