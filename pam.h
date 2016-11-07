@@ -42,7 +42,7 @@ class PAM {
     // 
     // itMax - maximum number of iterations
     // 
-    void SwapPhaseParallel (const ProcParams& procParams, const unsigned int itMax);
+    void SwapPhaseParallel (const ProcParams& procParams_in, const unsigned int itMax);
 
     void Dump (const string& fout_str = string("output.txt")) const;
 

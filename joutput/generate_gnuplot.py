@@ -10,10 +10,10 @@ log_files = [
     "output-bgp-512-small.txt",
     "output-bgp-512-medium.txt",
     "output-bgp-512-big.txt",
-    # "output-bgp-1024-milli.txt",
-    # "output-bgp-1024-small.txt",
-    # "output-bgp-1024-medium.txt",
-    # "output-bgp-1024-big.txt",
+    "output-bgp-1024-milli.txt",
+    "output-bgp-1024-small.txt",
+    "output-bgp-1024-medium.txt",
+    "output-bgp-1024-big.txt",
 ]
 
 data = []
@@ -30,10 +30,14 @@ for log_file in log_files:
             obj["m"] = int(values[3])
             obj["k"] = int(values[5])
             obj["p"] = int(values[7])
-            obj["b-time"] = int(f.readline().split()[1])
-            obj["s-time"] = int(f.readline().split()[1])
+            obj["b-time"] = float(f.readline().split()[1])
+            obj["s-time"] = float(f.readline().split()[1])
             obj["a-time"] = int(f.readline().split()[1])
-            obj["it"] = int(f.readline().split()[1])
+            if obj["a-time"] == 0:
+                obj["a-time"] = 1.0
+            else:
+                obj["a-time"] = float(obj["a-time"])
+            obj["it"] = int(f.readline().split()[1]) + 1
 
             data.append(obj)
 
@@ -64,7 +68,7 @@ def countGFlops(value):
     overall_time = value["a-time"]
     if overall_time == 0:
         overall_time = 1
-    return ((n * n * (2 * k - 1) - k * k * (n - 1 / 2) + n - (3 / 2) * k) + value["it"] * (k * n * n - 3 * n * k + k * k + (n - 1) * (n - k) * k)) / overall_time / 1000000.0
+    return float(((n * n * (2 * k - 1) - k * k * (n - 1.0 / 2) + n - (3.0 / 2) * k) + value["it"] * (k * n * n - 3 * n * k + k * k + (n - 1) * (n - k) * k))) / overall_time / 1000000.0
 
 
 with open("gflops.dat", "w") as gnuplot_file:
@@ -72,13 +76,14 @@ with open("gflops.dat", "w") as gnuplot_file:
 
     prev_value_p = 0
     for value in data:
-        if prev_value_p != value["p"]:
-            prev_value_p = value["p"]
-            gnuplot_file.write("\n")
+        if value["p"] > 1:
+            if prev_value_p != value["p"]:
+                prev_value_p = value["p"]
+                gnuplot_file.write("\n")
 
-        GFlops = countGFlops(value)
+            GFlops = countGFlops(value)
 
-        gnuplot_file.write(str(value["p"]) + " " + str(value["n"]) + " " + str(GFlops) + "\n")
+            gnuplot_file.write(str(value["p"]) + " " + str(value["n"]) + " " + str(GFlops) + "\n")
 
 
 def find_arr(arr, cfn):
@@ -88,18 +93,38 @@ def find_arr(arr, cfn):
     return -1
 
 
-with open("relative_performance.dat", "w") as gnuplot_file:
+with open("percents.dat", "w") as gnuplot_file:
     gnuplot_file.write("# x1 x2 y\n")
 
     prev_value_p = 0
     for value in data:
-        if prev_value_p != value["p"]:
-            prev_value_p = value["p"]
-            gnuplot_file.write("\n")
+        if value["p"] > 1:
+            # if value["p"] > 1 and value["n"] <= 4000:
+            if prev_value_p != value["p"]:
+                prev_value_p = value["p"]
+                gnuplot_file.write("\n")
 
-        etalon = find_arr(data, lambda x: x["p"] == 1 and x["n"] == value["n"])
-        if etalon >= 0:
+            etalon = find_arr(data, lambda x: x["p"] == 1 and x["n"] == value["n"])
+            if etalon >= 0:
 
-            attitude = countGFlops(value) / (countGFlops(data[etalon]) * value["p"])
+                # Normalized efficiency (%)
+                # attitude = (data[etalon]["a-time"] / data[etalon]["it"]) / (value["a-time"] / value["it"] * value["p"])
+                #
+                # The same result ?
+                # attitude = countGFlops(value) / (countGFlops(data[etalon]) * value["p"]) * 100
 
-            gnuplot_file.write(str(value["p"]) + " " + str(value["n"]) + " " + str(attitude) + "\n")
+                # Efficiency (%)
+                attitude = (data[etalon]["a-time"]) / (value["a-time"] * value["p"])
+
+                # Iterations amount
+                # attitude = value["it"]
+
+                # Strong scaling
+                # gigaflops
+                # attitude = countGFlops(value)
+
+                # Weak scaling
+                # gigaflops per processes
+                # attitude = countGFlops(value) / value["p"]
+
+                gnuplot_file.write(str(value["p"]) + " " + str(value["n"]) + " " + str(attitude) + "\n")

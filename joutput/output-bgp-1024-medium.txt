@@ -137,8 +137,8 @@ overalTimeDuration= 21438 milli-seconds
 iterations= 44
 
 n= 4000 m= 5 k= 80 p= 640
-buildTimeDuration= 495 milli-seconds
-swapTimeDuration= 12370 milli-seconds
-overalTimeDuration= 12865 milli-seconds
+buildTimeDuration= 505 milli-seconds
+swapTimeDuration= 16631 milli-seconds
+overalTimeDuration= 17136 milli-seconds
 iterations= 29
 

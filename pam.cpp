@@ -9,6 +9,7 @@
 using std::fstream;
 using std::endl;
 using std::cout;
+using std::cerr;
 using std::ceil;
 
 #include "pam.h"
@@ -251,7 +252,7 @@ void PAM::BuildPhaseParallel (const ProcParams& procParams){
 // ==================================================================================================================================================
 //                                                                                                                             PAM::SwapPhaseParallel
 // ==================================================================================================================================================
-void PAM::SwapPhaseParallel (const ProcParams& procParams, const unsigned int itMax){
+void PAM::SwapPhaseParallel (const ProcParams& procParams_in, const unsigned int itMax){
 
     if (debug){
         sleep(1);
@@ -264,20 +265,27 @@ void PAM::SwapPhaseParallel (const ProcParams& procParams, const unsigned int it
     // computation of task's positions for current process from calculation graph
     
     unsigned int tasksNum = k*(n-k);
-    unsigned int tasksPerProcess = static_cast<unsigned int>(ceil(static_cast<double>(tasksNum) / procParams.size));
-    unsigned int absolutePosition = procParams.rank * tasksPerProcess;
+    unsigned int tasksPerProcess = static_cast<unsigned int>(ceil(static_cast<double>(tasksNum) / procParams_in.size));
+    unsigned int absolutePosition = procParams_in.rank * tasksPerProcess;
     unsigned int task_m_s = absolutePosition / (n-k);
     unsigned int task_o_h = absolutePosition % (n-k);
 
-    if (procParams.rank * tasksPerProcess >= tasksNum) {
+    MPI_Comm currentComm;
+    if (procParams_in.rank * tasksPerProcess < tasksNum){
+        MPI_Comm_split(procParams_in.comm, 1, procParams_in.rank, &currentComm);
+    } else {
+        MPI_Comm_split(procParams_in.comm, MPI_UNDEFINED, procParams_in.rank, &currentComm);
+    }
+    if (currentComm == MPI_COMM_NULL){
         // Somebody given to us more processes then tasks, I am going to use not all processes
         return;
     }
+    ProcParams procParams(currentComm);
 
     double* min_m_s = new double [n];
 
     while (true){
-
+       
         if (debug) sleep(1);
 
         // Calculation of best minSum and arguments m_s and o_h
@@ -478,6 +486,7 @@ void PAM::SwapPhaseParallel (const ProcParams& procParams, const unsigned int it
     }
 
     delete [] min_m_s;
+    MPI_Comm_free(&currentComm);
 }
 
 // ==================================================================================================================================================

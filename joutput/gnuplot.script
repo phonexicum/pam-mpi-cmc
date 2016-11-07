@@ -24,13 +24,12 @@ set pal maxcolors 0
 set palette defined
 
 splot "gflops.dat" title '' ls 1, "gflops.dat" title '' with lines ls 1
-
 pause mouse button3
+
 
 set view 60,30
 
-set zlabel "Performance (%)" offset graph 0,0,0.7
+set zlabel "Efficiency (%)" offset graph 0,0,0.7
 
-splot "relative_performance.dat" title '' ls 1, "relative_performance.dat" title '' with lines ls 1
-
+splot "percents.dat" title '' ls 1, "percents.dat" title '' with lines ls 1
 pause mouse button3

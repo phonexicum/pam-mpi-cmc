@@ -18,6 +18,7 @@
 using std::string;
 using std::fstream;
 using std::cout;
+using std::cerr;
 using std::endl;
 using std::set;
 using std::istringstream;
@@ -70,7 +71,6 @@ void Benchmark (const int n, const int k, const int p, const int m, const int ma
 
         procParams = ProcParams(currentComm);
 
-
         // algorithm initialization
         // 
         InputData inputData (n, m, fin_name);
@@ -108,10 +108,6 @@ void Benchmark (const int n, const int k, const int p, const int m, const int ma
 
         delete [] distanceMatrix; distanceMatrix = NULL;
 
-        // MPI free
-        MPI_Comm_free (&currentComm);
-
-
         // algorithm results
         if (procParams.rank == 0){
 
@@ -136,6 +132,9 @@ void Benchmark (const int n, const int k, const int p, const int m, const int ma
             fout << endl;
             fout.close();
         }
+
+        // MPI free
+        MPI_Comm_free (&currentComm);
     }
 }
 
@@ -178,12 +177,15 @@ int main(int argc, char* argv[]){
     vector<int> matrix_size;
     vector<int> proc_num;
     vector<int> maxIt;
-    while (settings_fin.eof() == false) {
+
+    while (true) {
         int matrix, p, maxIter;
         settings_fin >> matrix >> p >> maxIter;
         matrix_size.push_back(matrix);
         proc_num.push_back(p);
         maxIt.push_back(maxIter);
+        if (settings_fin.eof() == true)
+            break;
     }
     settings_fin.close();
 
