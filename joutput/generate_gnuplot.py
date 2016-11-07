@@ -93,28 +93,33 @@ def find_arr(arr, cfn):
     return -1
 
 
+x_cells_num = 0
+
 with open("percents.dat", "w") as gnuplot_file:
     gnuplot_file.write("# x1 x2 y\n")
 
     prev_value_p = 0
     for value in data:
+
         if value["p"] > 1:
-            # if value["p"] > 1 and value["n"] <= 4000:
             if prev_value_p != value["p"]:
                 prev_value_p = value["p"]
                 gnuplot_file.write("\n")
+
+                if x_cells_num == 0:
+                    x_cells_num = data.index(value)
 
             etalon = find_arr(data, lambda x: x["p"] == 1 and x["n"] == value["n"])
             if etalon >= 0:
 
                 # Normalized efficiency (%)
-                # attitude = (data[etalon]["a-time"] / data[etalon]["it"]) / (value["a-time"] / value["it"] * value["p"])
+                attitude = (data[etalon]["a-time"] / data[etalon]["it"]) / (value["a-time"] / value["it"] * value["p"])
                 #
                 # The same result ?
                 # attitude = countGFlops(value) / (countGFlops(data[etalon]) * value["p"]) * 100
 
                 # Efficiency (%)
-                attitude = (data[etalon]["a-time"]) / (value["a-time"] * value["p"])
+                # attitude = (data[etalon]["a-time"]) / (value["a-time"] * value["p"])
 
                 # Iterations amount
                 # attitude = value["it"]
@@ -127,4 +132,46 @@ with open("percents.dat", "w") as gnuplot_file:
                 # gigaflops per processes
                 # attitude = countGFlops(value) / value["p"]
 
+                value["u"] = attitude
+
                 gnuplot_file.write(str(value["p"]) + " " + str(value["n"]) + " " + str(attitude) + "\n")
+
+y_cells_num = len(data) / x_cells_num - 1  # no p == 1
+
+data = data[:x_cells_num * y_cells_num]
+data.reverse()
+
+markProc = 0.0
+markData = 0.0
+markAll = 0.0
+
+maxP_minP = data[y_cells_num * x_cells_num - 1]["p"] - data[0]["p"]
+maxD_minD = data[x_cells_num - 1]["n"] - data[0]["n"]
+
+for j in xrange(y_cells_num - 1):
+    for i in xrange(x_cells_num - 1):
+        dEP = data[j * x_cells_num + i]["u"] - data[(j + 1) * x_cells_num + i]["u"] + data[j * x_cells_num + i + 1]["u"] - data[(j + 1) * x_cells_num + i + 1]["u"]
+        markP = dEP / 2.0 * (data[j * x_cells_num + i]["p"] - data[(j + 1) * x_cells_num + i]["p"]) / maxP_minP
+
+        dED = data[j * x_cells_num + i]["u"] - data[(j + 1) * x_cells_num + i + 1]["u"] + data[j * x_cells_num + i + 1]["u"] - data[(j + 1) * x_cells_num + i]["u"]
+        markD = dED / 2.0 * (data[j * x_cells_num + i]["n"] - data[j * x_cells_num + i + 1]["n"]) / maxD_minD
+
+        markA = (markP + markD) / 2.0
+
+        markProc += markP
+        markData += markD
+        markAll += markA
+
+markProc = markProc / ((x_cells_num - 1) * (y_cells_num - 1))
+markData = markData / ((x_cells_num - 1) * (y_cells_num - 1))
+markAll = markAll / ((x_cells_num - 1) * (y_cells_num - 1))
+
+print "minP=", data[0]["p"]
+print "maxP=", data[y_cells_num * x_cells_num - 1]["p"]
+print "minD=", data[0]["n"]
+print "maxD=", data[x_cells_num - 1]["n"]
+print "markProc= ", markProc
+print "markData= ", markData
+print "markAll= ", markAll
+print "minEn=", min(data, key=lambda x: x["u"])["u"]
+print "maxEn=", max(data, key=lambda x: x["u"])["u"]

@@ -49,7 +49,7 @@ Detailed PAM algorithm description can be found on [Algowiki project (russian on
 `./data/generate_experiment.sh` generates a lot of pseudo-random numbers to be used as point coordinates for benchmark.
 
 - Gflops (FLoating-point Operations Per Second) = amount of *floating* operations (for PAM that are `sum` and `max`) / algorithm execution time
-- Efficiency (%) = GFlops for `p` processes and `n` sized multitude / GFlops for 1 process and `n` sized multitude / `p` processes
+- Efficiency (%) = GFlops for `p` processes for `n` sized multitude / GFlops for 1 process for `n` sized multitude / `p` processes
 
 
 Algorithm works **considerably** faster, if `n * (n-k) % p == 0`.
