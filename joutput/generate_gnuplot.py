@@ -65,10 +65,7 @@ data.sort(cmp=cmpFunc, reverse=False)
 def countGFlops(value):
     n = value["n"]
     k = value["k"]
-    overall_time = value["a-time"]
-    if overall_time == 0:
-        overall_time = 1
-    return float(((n * n * (2 * k - 1) - k * k * (n - 1.0 / 2) + n - (3.0 / 2) * k) + value["it"] * (k * n * n - 3 * n * k + k * k + (n - 1) * (n - k) * k))) / overall_time / 1000000.0
+    return float(((n * n * (2 * k - 1) - k * k * (n - 1.0 / 2) + n - (3.0 / 2) * k) + value["it"] * (k * n * n - 3 * n * k + k * k + (n - 1) * (n - k) * k))) / value["a-time"] / 1000000.0
 
 
 with open("gflops.dat", "w") as gnuplot_file:
@@ -95,13 +92,13 @@ def find_arr(arr, cfn):
 
 x_cells_num = 0
 
-with open("percents.dat", "w") as gnuplot_file:
+with open("efficiency.dat", "w") as gnuplot_file:
     gnuplot_file.write("# x1 x2 y\n")
 
     prev_value_p = 0
     for value in data:
 
-        if value["p"] > 1:
+        # if value["p"] > 1:
             if prev_value_p != value["p"]:
                 prev_value_p = value["p"]
                 gnuplot_file.write("\n")
@@ -116,7 +113,7 @@ with open("percents.dat", "w") as gnuplot_file:
                 attitude = (data[etalon]["a-time"] / data[etalon]["it"]) / (value["a-time"] / value["it"] * value["p"])
                 #
                 # The same result ?
-                # attitude = countGFlops(value) / (countGFlops(data[etalon]) * value["p"]) * 100
+                # attitude = countGFlops(value) / (countGFlops(data[etalon]) * value["p"])
 
                 # Efficiency (%)
                 # attitude = (data[etalon]["a-time"]) / (value["a-time"] * value["p"])
@@ -134,7 +131,7 @@ with open("percents.dat", "w") as gnuplot_file:
 
                 value["u"] = attitude
 
-                gnuplot_file.write(str(value["p"]) + " " + str(value["n"]) + " " + str(attitude) + "\n")
+                gnuplot_file.write(str(value["p"]) + " " + str(value["n"]) + " " + str(attitude * 100) + "\n")
 
 y_cells_num = len(data) / x_cells_num - 1  # no p == 1
 
@@ -150,13 +147,13 @@ maxD_minD = data[x_cells_num - 1]["n"] - data[0]["n"]
 
 for j in xrange(y_cells_num - 1):
     for i in xrange(x_cells_num - 1):
-        dEP = data[j * x_cells_num + i]["u"] - data[(j + 1) * x_cells_num + i]["u"] + data[j * x_cells_num + i + 1]["u"] - data[(j + 1) * x_cells_num + i + 1]["u"]
-        markP = dEP / 2.0 * (data[j * x_cells_num + i]["p"] - data[(j + 1) * x_cells_num + i]["p"]) / maxP_minP
+        dEP = (data[j * x_cells_num + i]["u"] - data[(j + 1) * x_cells_num + i]["u"] + data[j * x_cells_num + i + 1]["u"] - data[(j + 1) * x_cells_num + i + 1]["u"]) / 2.0
+        markP = dEP * (data[j * x_cells_num + i]["p"] - data[(j + 1) * x_cells_num + i]["p"]) / maxP_minP
 
-        dED = data[j * x_cells_num + i]["u"] - data[(j + 1) * x_cells_num + i + 1]["u"] + data[j * x_cells_num + i + 1]["u"] - data[(j + 1) * x_cells_num + i]["u"]
-        markD = dED / 2.0 * (data[j * x_cells_num + i]["n"] - data[j * x_cells_num + i + 1]["n"]) / maxD_minD
+        dED = (data[j * x_cells_num + i]["u"] + data[(j + 1) * x_cells_num + i]["u"] - data[j * x_cells_num + i + 1]["u"] - data[(j + 1) * x_cells_num + i + 1]["u"]) / 2.0
+        markD = dED * (data[j * x_cells_num + i]["n"] - data[j * x_cells_num + i + 1]["n"]) / maxD_minD
 
-        markA = (markP + markD) / 2.0
+        markA = (dEP + dED) / 2.0 * (data[j * x_cells_num + i]["p"] - data[(j + 1) * x_cells_num + i]["p"]) * (data[j * x_cells_num + i]["n"] - data[j * x_cells_num + i + 1]["n"]) / maxP_minP / maxD_minD
 
         markProc += markP
         markData += markD
