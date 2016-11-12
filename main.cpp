@@ -50,7 +50,7 @@ void Benchmark (const int n, const int k, const int p, const int m, const int ma
     ProcParams procParams;
 
     if (procParams.rank == 0){
-        cout << "Benchmark with parameters: " << n << " " << p << " " << maxIt << endl;
+        cout << "Benchmark with parameters: " << n << " " << k << " " << p << " " << maxIt << endl;
     }
 
     // MPI initialization
@@ -117,11 +117,11 @@ void Benchmark (const int n, const int k, const int p, const int m, const int ma
             // fout << "buildTimeDuration= " << std::chrono::duration_cast<std::chrono::nanoseconds>(medianClock - startClock).count() << " nano-seconds" << endl;
             // fout << "swapTimeDuration= " << std::chrono::duration_cast<std::chrono::nanoseconds>(finishClock - medianClock).count() << " nano-seconds" << endl;
             // fout << "overalTimeDuration= " << std::chrono::duration_cast<std::chrono::nanoseconds>(finishClock - startClock).count() << " nano-seconds" << endl;
-            fout << "buildTimeDuration= " << medianClock - startClock << " milli-seconds" << endl;
-            fout << "swapTimeDuration= " << finishClock - medianClock << " milli-seconds" << endl;
-            fout << "overalTimeDuration= " << finishClock - startClock << " milli-seconds" << endl;
+            fout << "b-time= " << medianClock - startClock << " ms" << endl;
+            fout << "s-time= " << finishClock - medianClock << " ms" << endl;
+            fout << "a-time= " << finishClock - startClock << " ms" << endl;
 
-            fout << "iterations= " << pam.getIterationsCounter() << endl;
+            fout << "it= " << pam.getIterationsCounter() << endl;
             // fout << "targetFunctionValue= " << pam.getTargetFunctionValue() << endl;
             // fout << "Medoids(points-indexes):" << endl;
 
@@ -175,22 +175,26 @@ int main(int argc, char* argv[]){
 
     fstream settings_fin (settings_file.c_str(), fstream::in);
     vector<int> matrix_size;
+    vector<int> clusters;
     vector<int> proc_num;
     vector<int> maxIt;
 
     while (true) {
-        int matrix, p, maxIter;
-        settings_fin >> matrix >> p >> maxIter;
-        matrix_size.push_back(matrix);
-        proc_num.push_back(p);
-        maxIt.push_back(maxIter);
+        int matrix, clust, p, maxIter;
+        settings_fin >> matrix >> clust >> p >> maxIter;
+        
         if (settings_fin.eof() == true)
             break;
+
+        matrix_size.push_back(matrix);
+        clusters.push_back(clust);
+        proc_num.push_back(p);
+        maxIt.push_back(maxIter);
     }
     settings_fin.close();
 
     for (unsigned int i = 0; i < matrix_size.size(); i++){
-        Benchmark (matrix_size[i], matrix_size[i] / 50, proc_num[i], 5, maxIt[i], input_file, output_file);
+        Benchmark (matrix_size[i], clusters[i], proc_num[i], 5, maxIt[i], input_file, output_file);
     }
 
     MPI_Barrier (MPI_COMM_WORLD);

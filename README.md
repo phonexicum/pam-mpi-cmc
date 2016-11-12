@@ -4,9 +4,8 @@ This repository contains **Partitioning Around Medoids (PAM)** algorithm written
 
 Considered supercomputers:
 
-- Lomonosov
 - Blue Gene/P (g++ -std=gnu++98)
-- Regatta
+- *Lomonosov (could have been used)*
 
 In realization synchronized MPI Send/Recv are used.
 
@@ -18,14 +17,12 @@ OpenMP not used (but it could have been used).
 - `./pam.h` and `./pam.cpp` - C++ PAM realization
 
 - `./data/` - contains data to be processed clusterized
-- `./joutput/` - contains results of PAM benchmark on *Blue Gene/P* supercomputer
+- `./joutput/` and `./joutput-detailed/` - contains results of PAM benchmark on *Blue Gene/P* supercomputer
 
     - `./generate_gnuplot.py` - generates `./*.dat` files for their plotting
     - `./gnuplot.script` - gnuplot script which generates plots representing *matrix multiplication performance*
 
-- `./mpisubmit.sh` - script for starting tasks on Regatta supercomputer. This perl script was taken from BlueGene and adapted to Regatta.
-- `./scripts/` - directory contains various scripts to upload to supercomputers files, compile them and run
-- `./settings/` - directory contains sets of settings for PAM testing
+- `./settings/` and `./settings-detailed/` - directory contains sets of settings for PAM testing
 
 
 ## Algorithm description
@@ -53,14 +50,19 @@ Detailed PAM algorithm description can be found on [Algowiki project (russian on
 
 
 Algorithm works **considerably** faster, if `n * (n-k) % p == 0`.
-It is hard to generate good graphic for this property, therefore I prefered to work around those points in graphic.
+It is hard to generate good graphic for this property, therefore I prefered to work around those points in graphic (for not detailed settings)
 (n= 1250 k= 25 p= 896, n= 4000 m= 5 k= 80 p= 640)
+
+In detailed settings this special cases can be easily seen (on pictures they are ordered in lines).
 
 ## supercomputer commands
 
 ### Blue Gene
 
 ```
+mpisubmit.bg -n 128 -m VN -w 00:15:00 -t PREFER_TORUS ./pam settings-detailed/bgp-set-bench.txt data/experiment-detailed.txt output/output-bgp-bench.txt
+
+
 mpisubmit.bg -n 1 -m smp -w 02:00:00 -t PREFER_TORUS ./pam settings/bgp-1proc.txt data/experiment.txt output/output-bgp-1proc.txt
 
 mpisubmit.bg -n 64 -m VN -w 02:00:00 -t PREFER_TORUS ./pam settings/bgp-256-milli.txt data/experiment.txt output/output-bgp-256-milli.txt
@@ -85,38 +87,4 @@ mpisubmit.bg -n 128 -w 00:15:00 -t PREFER_TORUS
 mpisubmit.bg -n 256 -w 00:10:00 -t PREFER_TORUS
 mpisubmit.bg -n 512 -w 00:05:00 -t PREFER_TORUS
 mpisubmit.bg -n 1024 -w 00:02:00 -t PREFER_TORUS
-```
-
-### Lomonosov
-
-Lomonosov execute tasks in context of `~/_scratch` directory.
-
-```
-sbatch -p regular4 -n 1024 impi ./pam settings/r4-set-1.txt input_data.txt output/r4-out-1.txt
-sbatch -p regular4 -n 384 impi ./pam settings/r4-set-2.txt input_data.txt output/r4-out-2.txt
-sbatch -p regular4 -n 1024 impi ./pam settings/r4-set-3.txt input_data.txt output/r4-out-3.txt
-
-sbatch -p regular6 -n 16 impi ./pam ./settings/regular-set-1.txt input_data.txt ./output/r6-out-1.txt
-sbatch -p regular6 -n 64 impi ./pam ./settings/regular-set-2.txt input_data.txt ./output/r6-out-2.txt
-sbatch -p regular6 -n 512 impi ./pam ./settings/regular-set-3.txt input_data.txt ./output/r6-out-3.txt
-
-sbatch -p smp -n 16 impi ./pam ./settings/smp-set-1.txt input_data.txt ./output/smp-out-1.txt
-sbatch -p smp -n 64 impi ./pam ./settings/smp-set-2.txt input_data.txt ./output/smp-out-2.txt
-sbatch -p smp -n 128 impi ./pam ./settings/smp-set-3.txt input_data.txt ./output/smp-out-3.txt
-
-sbatch -p hdd4 -n 16 impi ./pam ./settings/hdd4-set-1.txt input_data.txt ./output/hdd4-out-1.txt
-sbatch -p hdd4 -n 64 impi ./pam ./settings/hdd4-set-2.txt input_data.txt ./output/hdd4-out-2.txt
-sbatch -p hdd4 -n 256 impi ./pam ./settings/hdd4-set-3.txt input_data.txt ./output/hdd4-out-3.txt
-
-sbatch -p hdd6 -n 16 impi ./pam ./settings/hdd6-set-1.txt input_data.txt ./output/hdd6-out-1.txt
-sbatch -p hdd6 -n 64 impi ./pam ./settings/hdd6-set-2.txt input_data.txt ./output/hdd6-out-2.txt
-sbatch -p hdd6 -n 128 impi ./pam ./settings/hdd6-set-3.txt input_data.txt ./output/hdd6-out-3.txt
-
-sbatch -p gpu -n 16 impi ./pam ./settings/gpu-set-1.txt input_data.txt ./output/gpu-out-1.txt
-sbatch -p gpu -n 64 impi ./pam ./settings/gpu-set-2.txt input_data.txt ./output/gpu-out-2.txt
-sbatch -p gpu -n 256 impi ./pam ./settings/gpu-set-3.txt input_data.txt ./output/gpu-out-3.txt
-sbatch -p gpu -n 64 impi ./pam ./settings/gpu-set-4.txt input_data.txt ./output/gpu-out-4.txt
-sbatch -p gpu -n 256 impi ./pam ./settings/gpu-set-5.txt input_data.txt ./output/gpu-out-5.txt
-sbatch -p gpu -n 8 impi ./pam ./settings/gpu-set-6.txt input_data.txt ./output/gpu-out-6.txt
-sbatch -p gpu -n 192 impi ./pam ./settings/gpu-set-7.txt input_data.txt ./output/gpu-out-7.txt
 ```

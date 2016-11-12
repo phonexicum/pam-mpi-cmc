@@ -1,0 +1,45 @@
+#! /usr/bin/gnuplot
+
+set terminal wxt size 1200,700 font ',14'
+#set terminal wxt size 1920,1200 font ',14'
+
+
+
+set style line 1 lt 1 lw 0.3 lc rgb '#ff0000' pt -1
+
+set ticslevel 0
+set grid back lt 0 linewidth 0.500, lt 0 linewidth 0.500
+
+set pm3d implicit at s
+set pm3d scansforward
+#set pm3d interpolate 10,10 flush begin ftriangles noborder corners2color mean
+
+#set hidden3d back offset 1 trianglepattern 3 undefined 1 altdiagonal bentover
+
+set pal maxcolors 0
+set palette defined
+
+
+
+set title 'PAM performance' font ",26"
+set xlabel "Processes number"
+set ylabel "Matrix size"
+set zlabel "Performance (GFLOPS)" offset graph 0,0,0.7
+
+set view 65,350
+#set view 0,0
+
+#splot "gflops.dat" title '' ls 1
+splot "gflops.dat" title '' ls 1, "gflops.dat" title '' with lines ls 1
+pause mouse button3
+
+
+
+set title 'PAM efficiency' font ",26"
+set zlabel "Efficiency (%)" offset graph 0,0,0.7
+
+set view 60,40
+
+#splot "efficiency.dat" title '' ls 1
+splot "efficiency.dat" title '' ls 1, "efficiency.dat" title '' with lines ls 1
+pause mouse button3
