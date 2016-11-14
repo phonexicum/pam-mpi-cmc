@@ -97,14 +97,17 @@ with open("efficiency.dat", "w") as gnuplot_file:
             etalon = find_arr(data, lambda x: x["p"] == 1 and x["n"] == value["n"])
             if etalon >= 0:
 
-                # Normalized efficiency (%)
-                attitude = (data[etalon]["a-time"] / data[etalon]["it"]) / (value["a-time"] / value["it"] * value["p"])
+                # Normalized parallelization efficiency (%)
+                # attitude = (data[etalon]["a-time"] / data[etalon]["it"]) / (value["a-time"] / value["it"] * value["p"])
                 #
                 # The same result ?
                 # attitude = countGFlops(value) / (countGFlops(data[etalon]) * value["p"])
 
-                # Efficiency (%)
+                # Parallelization efficiency (%)
                 # attitude = (data[etalon]["a-time"]) / (value["a-time"] * value["p"])
+
+                # Realization efficiency
+                attitude = countGFlops(value) / (3.4 * value["p"]) * 100
 
                 # Iterations amount
                 # attitude = value["it"]
@@ -119,7 +122,7 @@ with open("efficiency.dat", "w") as gnuplot_file:
 
                 value["u"] = attitude
 
-                gnuplot_file.write(str(value["p"]) + " " + str(value["n"]) + " " + str(attitude * 100) + "\n")
+                gnuplot_file.write(str(value["p"]) + " " + str(value["n"]) + " " + str(attitude) + "\n")
 
 y_cells_num = len(data) / x_cells_num - 1  # no p == 1
 

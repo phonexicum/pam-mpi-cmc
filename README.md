@@ -46,8 +46,10 @@ Detailed PAM algorithm description can be found on [Algowiki project (russian on
 `./data/generate_experiment.sh` generates a lot of pseudo-random numbers to be used as point coordinates for benchmark.
 
 - Gflops (FLoating-point Operations Per Second) = amount of *floating* operations (for PAM that are `sum` and `max`) / algorithm execution time
-- Efficiency (%) = GFlops for `p` processes for `n` sized multitude / GFlops for 1 process for `n` sized multitude / `p` processes
+- Efficiency (%) = GFlops for `p` processes for `n` sized multitude / GFlops for 1 process for `n` sized multitude / `p` processes * 100%
+- Absolute efficiency (%) = GFlops for `p` processes for `n` sized multitude / (3.4 GFlops * p) * 100%
 
+3.4 Gflops - is maximum performance of 1 process kernel for PowerPC 450 (850 MHz) on BlueGene/P.
 
 Algorithm works **considerably** faster, if `n * (n-k) % p == 0`.
 It is hard to generate good graphic for this property, therefore I prefered to work around those points in graphic (for not detailed settings)
